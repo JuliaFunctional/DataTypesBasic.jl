@@ -10,9 +10,11 @@ struct Failure{T, E} <: Try{T}
 end
 Failure{T}(exception::E, stack::Vector) where {T, E} = Failure{T, E}(exception, stack)
 Failure(exception::E, stack::Vector) where {E} = Failure{Any, E}(exception, stack)
+Failure{T}(failure::Failure) where T = Failure{T}(failure.exception, failure.stack)
 
-function Base.show(io::IO, exc::Failure)
-  print(io, exc.exception)
+function Base.show(io::IO, exc::Failure{T, E}) where {T, E}
+  println(io, "Failure{$T, $E}")
+  println(io, exc.exception)
   for (exc′, bt′) in exc.stack
     showerror(io, exc′, bt′)
     println(io)
@@ -124,6 +126,8 @@ Base.foreach(f, t::Failure) = nothing
 Base.map(func, t::Success) = Success(func(t.value))
 Base.map(f, t::Failure{T}) where T = Failure{Out(f, T)}(t.exception, t.stack)
 
+Iterators.flatten(x::Failure) = x
+Iterators.flatten(x::Success) = x.value
 
 
 # support for combining exceptions

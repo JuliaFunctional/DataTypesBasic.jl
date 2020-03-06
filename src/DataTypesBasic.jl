@@ -8,8 +8,7 @@ export @overwrite_Base,
   Try, Success, Failure, @Try, @TryCatch, issuccess, isexception, isfailure, getOption, MultipleExceptions,
   ContextManager, @ContextManager
 
-include("Utils.jl")
-using .Utils
+using IsDef
 
 include("Const.jl")
 include("Identity.jl")

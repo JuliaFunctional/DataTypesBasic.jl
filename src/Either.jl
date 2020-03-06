@@ -6,17 +6,26 @@ struct Left{L, R} <: Either{L, R}
 end
 Left{L}(x::L) where {L} = Left{L, Any}(x)
 Left(x::L) where {L} = Left{L, Any}(x)
+# TODO the typecast conflict with nested applications
+# Left{L, R}(x::Left{L}) where {L, R} = Left{L, R}(x.value)
+# Left{R}(x::Left{L}) where {L, R} = Left{L, R}(x.value)
 
 struct Right{L, R} <: Either{L, R}
   value::R
 end
 Right{L}(x::R) where {L, R} = Right{L, R}(x)
 Right(x::R) where {R} = Right{Any, R}(x)
+# TODO the typecast conflict with nested applications
+# Right{L}(x::Right{<:Any, R}) where {L, R} = Right{L, R}(x.value)
 
-Either{L, R}(x::Left{L}) where {L, R} = Left{L, R}(x.value)
-Either{L, R}(x::Right{<:Any, R}) where {L, R} = Right{L, R}(x.value)
+# TODO the typecast conflict with nested applications
+# Either{L, R}(x::Left{L}) where {L, R} = Left{L, R}(x.value)
+# Either{L, R}(x::Right{<:Any, R}) where {L, R} = Right{L, R}(x.value)
 Either{L, R}(x::L) where {L, R} = Left{L, R}(x)
 Either{L, R}(x::R) where {L, R} = Right{L, R}(x)
+Either{L, R}(x::L) where {L, R} = Left{L, R}(x)
+Either{L, R}(x::R) where {L, R} = Right{L, R}(x)
+
 Either{L}(x::R) where {L, R} = Right{L, R}(x)
 Either{L}(x::L) where {L} = Left{L, Any}(x)
 
@@ -70,3 +79,7 @@ Base.eltype(::Type{<:Either}) = Any
 
 Base.map(f, x::Right{L}) where {L} = Right{L}(f(x.value))
 Base.map(f, x::Left{L, R}) where {L, R} = Left{L, Out(f, R)}(x.value)
+
+Base.Iterators.flatten(x::Right) = x.value  # TODO or does this need to be more restrictive? like ``x::Either{L, E, Right} where {L, R, E <: Either{L, R}}``
+Base.Iterators.flatten(x::Left) = x
+Base.Iterators.flatten(x::Left{L, E}) where {L, R, E <: Either{L, R}} = Left{L, R}(x.value)  # just to have better type support

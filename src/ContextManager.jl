@@ -40,3 +40,24 @@ end
 Base.map(f, c::ContextManager) = @ContextManager cont -> begin
   c(x -> cont(f(x)))
 end
+
+function Iterators.flatten(c::ContextManager{T, F}) where {T <: ContextManager, F}
+  @ContextManager cont -> begin
+    # execute both nested ContextManagers in the nested manner
+    c() do cc
+      cc(cont)
+    end
+  end
+end
+
+# TODO it is pity, but type-inference is still that bad, that we have to support the general case directly
+# TODO this fails if type-inference fails for cases where we actually don't have nested ContextManagers but
+# e.g. a ContextManager with an Option inside (we get an Error "objects of type Option are not callable")
+function Iterators.flatten(c::ContextManager)
+  @ContextManager cont -> begin
+    # execute both nested ContextManagers in the nested manner
+    c() do cc
+      cc(cont)
+    end
+  end
+end

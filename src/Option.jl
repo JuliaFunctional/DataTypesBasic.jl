@@ -1,5 +1,8 @@
 abstract type Option{T} end
+
 struct None{T} <: Option{T} end
+None{T}(x::None) where T = None{T}()
+
 struct Some{T} <: Option{T}
   value::T
 end
@@ -52,4 +55,10 @@ Base.foreach(f, o::Some) = f(o.value); nothing
 Base.foreach(f, o::None) = nothing
 
 Base.map(f, o::None{T}) where T = None{Out(f, T)}()
-Base.map(f, o::Some) = Some(f(o.value))
+# TODO julia's automatic type-inference is too bad (infers Any)
+# hence we have explicit type-inference
+# check why this is the case or whether this changes with new julia versions
+Base.map(f, o::Some{T}) where T = Some{Out(f, T)}(f(o.value))
+
+Iterators.flatten(x::None) = x
+Iterators.flatten(x::Some) = x.value

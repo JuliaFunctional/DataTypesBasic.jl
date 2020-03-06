@@ -1,7 +1,9 @@
 struct Const{E, T}
   value::T
+  Const{E}(value::T) where {E, T} = new{E, T}(value)
 end
 Const(value) = Const{Any}(value)
+Const{T}(x::Const) where T = Const{T}(x.value)
 
 # == controversy https://github.com/JuliaLang/julia/issues/4648
 Base.:(==)(a::Const, b::Const) = a.value == b.value

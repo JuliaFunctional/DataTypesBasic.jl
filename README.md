@@ -1,18 +1,24 @@
-DataTypesBasic
---------------
+# DataTypesBasic
 
-This package defines julia implementations for the common types ``Option`` (aka ``Maybe``), ``Either`` and ``Try``.
+This package defines julia implementations for the common types ``Option`` (aka ``Maybe``), ``Either`` and ``Try``, as well as one extra type `ContextManager` which mimics behaviour realized in Python with python contextmanagers.
 
 Use it like
 ```julia
 using DataTypesBasic
 DataTypesBasic.@overwrite_Base
 ```
-The macro `@overwrite_Base` assigns ``Some`` to `DataTypesBasic.Some` (this is for consisting naming [following Scala](https://www.scala-lang.org/api/current/scala/Option.html)).
+The macro `@overwrite_Base` assigns ``Some`` to `DataTypesBasic.Some` (in order to have consistent naming [following Scala](https://www.scala-lang.org/api/current/scala/Option.html)).
 
+## Installation
 
-Option
-------
+```julia
+using Pkg
+pkg"registry add https://github.com/JuliaRegistries/General"  # central julia repository
+pkg"registry add https://github.com/schlichtanders/SchlichtandersJuliaRegistry.jl"  # custom repository
+pkg"add DataTypesBasic"
+```
+
+## Option
 
 ``Option{T}`` Type is like ``Union{T, Nothing}``, plus that you can dispatch on it more easily.
 
@@ -35,8 +41,8 @@ DataTypesBasic.@overwrite_Base
 fo(a::Some{String}) = a.value * "!"
 fo(a::None{String}) = "fallback behaviour"
 
-f(Option("hi"))  # "hi!"
-f(Option{String}())  # "fallback behaviour"
+fo(Option("hi"))  # "hi!"
+fo(Option{String}())  # "fallback behaviour"
 # f(Option{Int}())  # not implemented
 ```
 
@@ -74,19 +80,20 @@ The package ``TypeClasses.jl`` (soon to come) implements a couple of such higher
 (like Functors, Applicatives and Monads).
 
 
-[TODO] Try
----
+## [TODO] Try
 
+Please see the tests `test/Try.jl`.
 
-[TODO] Either
-------
+## [TODO] Either
 
+Please see the tests `test/Either.jl`.
 
-[TODO] ContextManager
---------------
+## [TODO] ContextManager
 
+Please see the tests `test/ContextManager.jl`.
 
-Other
------
+## [TODO] Other
 
 For abstraction purposes, there is also ``Const`` and ``Identity`` defined.
+
+Please see the tests `test/Const.jl` and `test/Identity.jl` respectively.

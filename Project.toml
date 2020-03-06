@@ -1,4 +1,7 @@
 name = "DataTypesBasic"
 uuid = "83eed652-29e8-11e9-12da-a7c29d64ffc9"
 authors = ["Sahm Stephan <stephan.sahm@gmx.de>"]
-version = "0.1.0"
+version = "0.2.0"
+
+[deps]
+IsDef = "2704c575-34db-4e2b-9135-fc0075949e5a"
