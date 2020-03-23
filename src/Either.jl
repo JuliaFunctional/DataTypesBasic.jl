@@ -31,10 +31,11 @@ Either{L}(x::L) where {L} = Left{L, Any}(x)
 
 
 # == controversy https://github.com/JuliaLang/julia/issues/4648
-Base.:(==)(a::Right, b::Right) = a.value == b.value
-Base.:(==)(a::Left, b::Right) = false
-Base.:(==)(a::Right, b::Left) = false
-Base.:(==)(a::Left, b::Left) = a.value == b.value
+Base.:(==)(a::Either, b::Either) = either_compare(a, b)
+either_compare(a::Right, b::Right) = a.value == b.value
+either_compare(a::Left, b::Right) = false
+either_compare(a::Right, b::Left) = false
+either_compare(a::Left, b::Left) = a.value == b.value
 
 # TypeClasses.unionall_implementationdetails(::Type{<:Either{L, R}}) where {L, R} = Either{L, R}
 # Traits.leaftypes(::Type{Either}) = [Either{newtype(), newtype(), Left}, Either{newtype(), newtype(), Right}]
@@ -48,38 +49,61 @@ end
 flip(x::Left{L, R}) where {L, R} = Right{R, L}(x.value)
 flip(x::Right{L, R}) where {L, R} = Left{R, L}(x.value)
 
+Base.get(e::Either) = either_get(e)
+either_get(e::Left) = nothing
+either_get(e::Right) = e.value
 
-Base.get(e::Left) = nothing
-Base.get(e::Right) = e.value
-getOption(::Left{L, R}) where {L, R} = None{R}()
-getOption(e::Right) = Some(e.value)
+getOption(e::Either) = either_getOption(e)
+either_getOption(::Left{L, R}) where {L, R} = None{R}()
+either_getOption(e::Right{L, R}) where {L, R} = Some{R}(e.value)
 
-isleft(e::Left) = true
-isleft(e::Right) = false
+isleft(e::Either) = either_isleft(e)
+either_isleft(e::Left) = true
+either_isleft(e::Right) = false
 
-isright(e::Left) = false
-isright(e::Right) = true
+isright(e::Either) = either_isright(e)
+either_isright(e::Left) = false
+either_isright(e::Right) = true
 
-getleft(e::Left) = e.value
-getleft(e::Right) = nothing
+getleft(e::Either) = either_getleft(e)
+either_getleft(e::Left) = e.value
+either_getleft(e::Right) = nothing
 
-getright(e::Left) = nothing
-getright(e::Right) = e.value
+getright(e::Either) = either_getright(e)
+either_getright(e::Left) = nothing
+either_getright(e::Right) = e.value
 
-getleftOption(e::Left{L, R}) where {L, R} = Some{L}(e.value)
-getleftOption(e::Right{L, R}) where {L, R} = None{L}()
+getleftOption(e::Either) = either_getleftOption(e)
+either_getleftOption(e::Left{L, R}) where {L, R} = Some{L}(e.value)
+either_getleftOption(e::Right{L, R}) where {L, R} = None{L}()
 
-getrightOption(e::Left{L, R}) where {L, R} = None{R}()
-getrightOption(e::Right{L, R}) where {L, R} = Some{R}(e.value)
+getrightOption(e::Either) = either_getrightOption(e)
+either_getrightOption(e::Left{L, R}) where {L, R} = None{R}()
+either_getrightOption(e::Right{L, R}) where {L, R} = Some{R}(e.value)
 
 Base.convert(::Type{<:Option}, e::Either) = getrightOption(e)
 
 Base.eltype(::Type{<:Either{L, R}}) where {L, R} = R
 Base.eltype(::Type{<:Either}) = Any
 
-Base.map(f, x::Right{L}) where {L} = Right{L}(f(x.value))
-Base.map(f, x::Left{L, R}) where {L, R} = Left{L, Out(f, R)}(x.value)
+Base.map(f, e::Either) = either_map(f, e)
+either_map(f, x::Right{L}) where {L} = Right{L}(f(x.value))
+either_map(f, x::Left{L, R}) where {L, R} = Left{L, Out(f, R)}(x.value)
 
-Base.Iterators.flatten(x::Right) = x.value  # TODO or does this need to be more restrictive? like ``x::Either{L, E, Right} where {L, R, E <: Either{L, R}}``
-Base.Iterators.flatten(x::Left) = x
-Base.Iterators.flatten(x::Left{L, E}) where {L, R, E <: Either{L, R}} = Left{L, R}(x.value)  # just to have better type support
+Iterators.flatten(e::Either) = either_flatten(e)
+either_flatten(x::Right{L, <:Either}) where {L} = x.value
+either_flatten(x::Right{L, Any}) where {L} = Base.Iterators.flatten(Right{L}(x.value))
+either_flatten(x::Left) = x
+either_flatten(x::Left{L, E}) where {L, R, E <: Either{L, R}} = Left{L, R}(x.value)  # just to have better type support
+
+
+# transform Option/Try to Either
+getEither(v::Option) = option_getEither(v)
+option_getEither(v::Some) = Right{Any}(v.value)
+option_getEither(v::None{T}) where T = Left{Nothing, T}(nothing)
+
+getEither(v::Try) = try_getEither(v)
+try_getEither(v::Success) = Right{Any}(v.value)
+try_getEither(v::Failure{T}) where T = Left{Failure, T}(v)
+
+getEither(v::Either) = v

@@ -1,9 +1,8 @@
-# tag
 abstract type Try{T} end
+
 struct Success{T} <: Try{T}
   value::T
 end
-
 struct Failure{T, E} <: Try{T}
   exception::E
   stack::Vector
@@ -11,6 +10,7 @@ end
 Failure{T}(exception::E, stack::Vector) where {T, E} = Failure{T, E}(exception, stack)
 Failure(exception::E, stack::Vector) where {E} = Failure{Any, E}(exception, stack)
 Failure{T}(failure::Failure) where T = Failure{T}(failure.exception, failure.stack)
+
 
 function Base.show(io::IO, exc::Failure{T, E}) where {T, E}
   println(io, "Failure{$T, $E}")
@@ -22,13 +22,14 @@ function Base.show(io::IO, exc::Failure{T, E}) where {T, E}
 end
 
 # == controversy https://github.com/JuliaLang/julia/issues/4648
-Base.:(==)(a::Success, b::Success) = a.value == b.value
-Base.:(==)(a::Failure, b::Success) = false
-Base.:(==)(a::Success, b::Failure) = false
-function Base.:(==)(a::Failure{T}, b::Failure{T}) where T
+Base.:(==)(a::Try, b::Try) = try_compare(a, b)
+try_compare(a::Success, b::Success) = a.value == b.value
+try_compare(a::Failure, b::Success) = false
+try_compare(a::Success, b::Failure) = false
+function try_compare(a::Failure{T}, b::Failure{T}) where T
   a.exception == b.exception && a.stack == b.stack
 end
-Base.:(==)(a::Failure, b::Failure) = false
+try_compare(a::Failure, b::Failure) = false
 
 # TypeClasses.unionall_implementationdetails(::Type{<:Try{T}}) where T = Try{T}
 # Traits.leaftypes(::Type{Try}) = [Try{newtype(), Success}, Try{newtype(), Exception}]
@@ -100,34 +101,45 @@ macro TryCatch(T, exception, expr)
   end
 end
 
-issuccess(::Success) = true
-issuccess(::Failure) = false
-isfailure(::Success) = false
-isfailure(::Failure) = true
-isexception(::Success) = false
-isexception(::Failure) = true
+issuccess(t::Try) = try_issuccess(t)
+try_issuccess(::Success) = true
+try_issuccess(::Failure) = false
 
-Base.get(t::Success) = t.value
-Base.get(::Failure) = nothing
-getOption(t::Success) = Some(t.value)
-getOption(::Failure{T}) where T = None{T}()
+isfailure(t::Try) = try_isfailure(t)
+try_isfailure(::Success) = false
+try_isfailure(::Failure) = true
+
+Base.get(t::Try) = try_get(t)
+try_get(t::Success) = t.value
+try_get(::Failure) = nothing
+
+getOption(t::Try) = try_getOption(t)
+try_getOption(t::Success) = Some(t.value)
+try_getOption(::Failure{T}) where T = None{T}()
+
 Base.convert(::Type{<:Option}, t::Try) = getOption(t)
 
 Base.eltype(::Type{<:Try{T}}) where T = T
 Base.eltype(::Type{<:Try}) = Any
 
-Base.iterate(t::Success) = t.value, nothing
-Base.iterate(t::Success, state) = state
-Base.iterate(t::Failure) = nothing
 
-Base.foreach(f, t::Success) = f(t.value); nothing
-Base.foreach(f, t::Failure) = nothing
+Base.iterate(t::Try, state...) = try_iterate(t, state...)
+try_iterate(t::Success) = t.value, nothing
+try_iterate(t::Success, state) = state
+try_iterate(t::Failure) = nothing
 
-Base.map(func, t::Success) = Success(func(t.value))
-Base.map(f, t::Failure{T}) where T = Failure{Out(f, T)}(t.exception, t.stack)
+Base.foreach(t::Try) = try_foreach(t)
+try_foreach(f, t::Success) = f(t.value); nothing
+try_foreach(f, t::Failure) = nothing
 
-Iterators.flatten(x::Failure) = x
-Iterators.flatten(x::Success) = x.value
+Base.map(t::Try) = try_map(t)
+try_map(func, t::Success) = Success(func(t.value))
+try_map(f, t::Failure{T}) where T = Failure{Out(f, T)}(t.exception, t.stack)
+
+Iterators.flatten(t::Try) = try_flatten(t)
+try_flatten(x::Failure) = x
+try_flatten(x::Success{<:Try}) = x.value
+try_flatten(x::Success{Any}) = Iterators.flatten(Success(x.value))
 
 
 # support for combining exceptions
