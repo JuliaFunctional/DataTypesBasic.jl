@@ -86,9 +86,17 @@ Base.convert(::Type{<:Option}, e::Either) = getrightOption(e)
 Base.eltype(::Type{<:Either{L, R}}) where {L, R} = R
 Base.eltype(::Type{<:Either}) = Any
 
-Base.map(f, e::Either) = either_map(f, e)
+Base.foreach(f, x::Either) = either_foreach(f, x)
+either_foreach(f, x::Right) = f(x.value); nothing
+either_foreach(f, x::Left) = nothing
+
+Base.map(f, x::Either) = either_map(f, x)
 either_map(f, x::Right{L}) where {L} = Right{L}(f(x.value))
-either_map(f, x::Left{L, R}) where {L, R} = Left{L, Out(f, R)}(x.value)
+function either_map(f, x::Left{L, R}) where {L, R}
+  _R2 = Out(f, R)
+  R2 = _R2 === NotApplicable ? Any : _R2
+  Left{L, R2}(x.value)
+end
 
 Iterators.flatten(e::Either) = either_flatten(e)
 either_flatten(x::Right{L, <:Either}) where {L} = x.value

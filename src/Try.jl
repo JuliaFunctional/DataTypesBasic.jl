@@ -122,19 +122,22 @@ Base.convert(::Type{<:Option}, t::Try) = getOption(t)
 Base.eltype(::Type{<:Try{T}}) where T = T
 Base.eltype(::Type{<:Try}) = Any
 
-
 Base.iterate(t::Try, state...) = try_iterate(t, state...)
 try_iterate(t::Success) = t.value, nothing
 try_iterate(t::Success, state) = state
 try_iterate(t::Failure) = nothing
 
-Base.foreach(t::Try) = try_foreach(t)
+Base.foreach(f, t::Try) = try_foreach(f, t)
 try_foreach(f, t::Success) = f(t.value); nothing
 try_foreach(f, t::Failure) = nothing
 
-Base.map(t::Try) = try_map(t)
-try_map(func, t::Success) = Success(func(t.value))
-try_map(f, t::Failure{T}) where T = Failure{Out(f, T)}(t.exception, t.stack)
+Base.map(f, t::Try) = try_map(f, t)
+try_map(f, x::Success) = @Try f(x.value)
+function try_map(f, t::Failure{T}) where T
+  _T2 = Out(f, T)
+  T2 = _T2 === NotApplicable ? Any : _T2
+  Failure{T2}(t.exception, t.stack)
+end
 
 Iterators.flatten(t::Try) = try_flatten(t)
 try_flatten(x::Failure) = x

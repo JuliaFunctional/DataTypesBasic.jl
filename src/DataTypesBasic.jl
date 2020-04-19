@@ -29,7 +29,7 @@ functions, we go with Approach 2. That applies to Option, Try and Either.
 """
 module DataTypesBasic
 
-export @overwrite_Base,
+export @overwrite_Base, @overwrite_Some,
   Const,
   Identity,
   Option, None, Some, issomething, iftrue, iffalse, getOption, # isnothing comes from Base
@@ -49,6 +49,14 @@ include("ContextManager.jl")
 macro overwrite_Base()
   esc(quote
     const Some = DataTypesBasic.Some
+    nothing
+  end)
+end
+
+macro overwrite_Some()
+  esc(quote
+    const Some = DataTypesBasic.Some
+    nothing
   end)
 end
 

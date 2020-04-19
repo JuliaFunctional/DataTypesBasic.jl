@@ -64,8 +64,12 @@ option_foreach(f, o::Some) = f(o.value); nothing
 option_foreach(f, o::None) = nothing
 
 Base.map(f, o::Option) = option_map(f, o)
-option_map(f, o::None{T}) where T = None{Out(f, T)}()
 option_map(f, o::Some{T}) where T = Some(f(o.value))
+function option_map(f, ::None{T}) where T
+  _T2 = Out(f, T)
+  T2 = _T2 === NotApplicable ? Any : _T2
+  None{T2}()
+end
 
 Iterators.flatten(x::Option) = option_flatten(x)
 option_flatten(x::None) = x
