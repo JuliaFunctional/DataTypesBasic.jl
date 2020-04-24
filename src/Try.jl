@@ -117,8 +117,6 @@ getOption(t::Try) = try_getOption(t)
 try_getOption(t::Success) = Some(t.value)
 try_getOption(::Failure{T}) where T = None{T}()
 
-Base.convert(::Type{<:Option}, t::Try) = getOption(t)
-
 Base.eltype(::Type{<:Try{T}}) where T = T
 Base.eltype(::Type{<:Try}) = Any
 
@@ -141,8 +139,7 @@ end
 
 Iterators.flatten(t::Try) = try_flatten(t)
 try_flatten(x::Failure) = x
-try_flatten(x::Success{<:Try}) = x.value
-try_flatten(x::Success{Any}) = Iterators.flatten(Success(x.value))
+try_flatten(x::Success) = convert(Try, x.value)
 
 
 # support for combining exceptions

@@ -73,8 +73,4 @@ end
 
 Iterators.flatten(x::Option) = option_flatten(x)
 option_flatten(x::None) = x
-option_flatten(x::Some{<:Option}) = x.value
-option_flatten(x::Some{Any}) = Iterators.flatten(Some{typeof(x.value)}(x.value))  # this fixes the type-information which will never return Any
-
-# getOption tries to transform into Option
-getOption(v::Option) = v
+option_flatten(x::Some) = convert(Option, x.value)

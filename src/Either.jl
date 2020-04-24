@@ -49,14 +49,6 @@ end
 flip(x::Left{L, R}) where {L, R} = Right{R, L}(x.value)
 flip(x::Right{L, R}) where {L, R} = Left{R, L}(x.value)
 
-Base.get(e::Either) = either_get(e)
-either_get(e::Left) = nothing
-either_get(e::Right) = e.value
-
-getOption(e::Either) = either_getOption(e)
-either_getOption(::Left{L, R}) where {L, R} = None{R}()
-either_getOption(e::Right{L, R}) where {L, R} = Some{R}(e.value)
-
 isleft(e::Either) = either_isleft(e)
 either_isleft(e::Left) = true
 either_isleft(e::Right) = false
@@ -81,10 +73,16 @@ getrightOption(e::Either) = either_getrightOption(e)
 either_getrightOption(e::Left{L, R}) where {L, R} = None{R}()
 either_getrightOption(e::Right{L, R}) where {L, R} = Some{R}(e.value)
 
-Base.convert(::Type{<:Option}, e::Either) = getrightOption(e)
+Base.get(e::Either) = getright(e)
+getOption(e::Either) = getrightOption(e)
 
 Base.eltype(::Type{<:Either{L, R}}) where {L, R} = R
 Base.eltype(::Type{<:Either}) = Any
+
+Base.iterate(e::Either, state...) = either_iterate(e, state...)
+either_iterate(e::Right) = e.value, nothing
+either_iterate(e::Right, state) = state
+either_iterate(e::Left) = nothing
 
 Base.foreach(f, x::Either) = either_foreach(f, x)
 either_foreach(f, x::Right) = f(x.value); nothing
@@ -99,19 +97,6 @@ function either_map(f, x::Left{L, R}) where {L, R}
 end
 
 Iterators.flatten(e::Either) = either_flatten(e)
-either_flatten(x::Right{L, <:Either}) where {L} = x.value
-either_flatten(x::Right{L, Any}) where {L} = Base.Iterators.flatten(Right{L}(x.value))
+either_flatten(x::Right) = convert(Either, x.value)
 either_flatten(x::Left) = x
 either_flatten(x::Left{L, E}) where {L, R, E <: Either{L, R}} = Left{L, R}(x.value)  # just to have better type support
-
-
-# transform Option/Try to Either
-getEither(v::Option) = option_getEither(v)
-option_getEither(v::Some) = Right{Any}(v.value)
-option_getEither(v::None{T}) where T = Left{Nothing, T}(nothing)
-
-getEither(v::Try) = try_getEither(v)
-try_getEither(v::Success) = Right{Any}(v.value)
-try_getEither(v::Failure{T}) where T = Left{Failure, T}(v)
-
-getEither(v::Either) = v
