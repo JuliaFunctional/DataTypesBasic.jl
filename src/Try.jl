@@ -1,20 +1,54 @@
-abstract type Try{T} end
-
-struct Success{T} <: Try{T}
+struct Success{T}
   value::T
 end
-struct Failure{T, E} <: Try{T}
+# the parameter is not used at all, only for making Failure a subtype of Try{T} for arbitrary T
+struct Failure{E}
   exception::E
   stack::Vector
 end
-Failure{T}(exception::E, stack::Vector) where {T, E} = Failure{T, E}(exception, stack)
-Failure(exception::E, stack::Vector) where {E} = Failure{Any, E}(exception, stack)
-Failure{T}(failure::Failure) where T = Failure{T}(failure.exception, failure.stack)
+Failure(exception) = Failure(exception, [])
+
+const Try{T, E} = Union{Failure{E}, Success{T}}
+Try(t::T) where T = Success{T}(t)
+Try(t::Exception) = Failure(t, [])
+Try{T}(t::T) where T = Success{T}(t)
+Try{T}(other) where T = Failure(other, [])
+
+# typejoin Failure & Failure
+Base.typejoin(::Type{Failure{E}}, ::Type{Failure{E}}) where E = Failure{E}
+Base.typejoin(::Type{<:Failure}, ::Type{<:Failure}) = Failure
+# typejoin Success & Success
+Base.typejoin(::Type{Success{T}}, ::Type{Success{T}}) where T = Success{E}
+Base.typejoin(::Type{<:Success}, ::Type{<:Success}) = Success
+# typejoin Failure & Success
+Base.typejoin(::Type{Failure{E}}, ::Type{Success{T}}) where {T, E} = Try{T, E}
+Base.typejoin(::Type{Success{T}}, ::Type{Failure{E}}) where {T, E} = Try{T, E}
+# typejoin Failure & Try
+Base.typejoin(::Type{Failure{E}}, ::Type{<:Try{T, E}}) where {T, E} = Try{T, E}
+Base.typejoin(::Type{<:Try{T, E}}, ::Type{Failure{E}}) where {T, E} = Try{T, E}
+Base.typejoin(::Type{<:Failure}, ::Type{<:Try{T}}) where T = Try{T}
+Base.typejoin(::Type{<:Try{T}}, ::Type{<:Failure}) where T = Try{T}
+# typejoin Success & Try
+Base.typejoin(::Type{Success{T}}, ::Type{<:Try{T, E}}) where {T, E} = Try{T, E}
+Base.typejoin(::Type{<:Try{T, E}}, ::Type{Success{T}}) where {T, E} = Try{T, E}
+Base.typejoin(::Type{<:Success}, ::Type{<:Try{<:Any, E}}) where E = Try{<:Any, E}
+Base.typejoin(::Type{<:Try{<:Any, E}}, ::Type{<:Success}) where E = Try{<:Any, E}
+# typejoin Try & Try
+Base.typejoin(::Type{<:Try{T, E}}, ::Type{<:Try{T, E}}) where {T, E} = Try{T, E}
+Base.typejoin(::Type{<:Try{T}}, ::Type{<:Try{T}}) where {T} = Try{T}
+Base.typejoin(::Type{<:Try{<:Any, E}}, ::Type{<:Try{<:Any, E}}) where {E} = Try{<:Any, E}
+Base.typejoin(::Type{<:Try}, ::Type{<:Try}) = Try
+
+# Try/Success are covariate
+Base.convert(::Type{Success{T}}, x::Success{S}) where {S, T} = Success(Base.convert(T, x.value))
+Base.convert(::Type{Try{T}}, x::Success{S}) where {S, T} = Success(Base.convert(T, x.value))
+promote_rule(::Type{Success{T}}, ::Type{Success{S}}) where {T, S<:T} = Success{T}
+promote_rule(::Type{Try{T}}, ::Type{Try{S}}) where {T, S<:T} = Try{T}
 
 
-function Base.show(io::IO, exc::Failure{T, E}) where {T, E}
-  println(io, "Failure{$T, $E}")
-  println(io, exc.exception)
+# Multiline version, following https://docs.julialang.org/en/v1/manual/types/#man-custom-pretty-printing-1
+function Base.show(io::IO, ::MIME"text/plain", exc::Failure{E}) where {E}
+  println(io, "Failure{$E}($(repr(exc.exception)))")
   for (exc′, bt′) in exc.stack
     showerror(io, exc′, bt′)
     println(io)
@@ -22,31 +56,16 @@ function Base.show(io::IO, exc::Failure{T, E}) where {T, E}
 end
 
 # == controversy https://github.com/JuliaLang/julia/issues/4648
-Base.:(==)(a::Try, b::Try) = try_compare(a, b)
-try_compare(a::Success, b::Success) = a.value == b.value
-try_compare(a::Failure, b::Success) = false
-try_compare(a::Success, b::Failure) = false
-function try_compare(a::Failure{T}, b::Failure{T}) where T
+Base.:(==)(a::Success, b::Success) = a.value == b.value
+Base.:(==)(a::Failure, b::Success) = false
+Base.:(==)(a::Success, b::Failure) = false
+function Base.:(==)(a::Failure, b::Failure)
   a.exception == b.exception && a.stack == b.stack
 end
-try_compare(a::Failure, b::Failure) = false
-
-# TypeClasses.unionall_implementationdetails(::Type{<:Try{T}}) where T = Try{T}
-# Traits.leaftypes(::Type{Try}) = [Try{newtype(), Success}, Try{newtype(), Exception}]
 
 
-Try{T}(t::T) where T = Success{T}(t)
-Try{T}(t::Exception) where T = Failure{T}(t, [])
-Try{T}(t::Success{T}) where T = t
-Try{T}(t::Failure{T}) where T = t
-
-Try(t::T) where T = Success{T}(t)
-Try(t::Exception) = Failure{Any}(t, [])
-Try(t::Success) = t
-Try(t::Failure) = t
-
-
-# we cannot use Try(f::Function) as this interferes e.g. with mapn (in mapn anonymous functions are passed through, which should not get executed automatically)
+# we use a macro instead of dispatching on Try(f::Function) as this interferes e.g. with mapn
+# (in mapn anonymous functions are passed through, which should not get executed automatically)
 macro Try(expr)
   quote
     try
@@ -58,18 +77,6 @@ macro Try(expr)
   end
 end
 
-macro Try(T, expr)
-  quote
-    r = try
-      $(esc(expr))
-    catch exc
-      Failure{$T}(exc, Base.catch_stack())
-    end
-    Try{$T}(r)
-  end
-end
-
-
 # version which supports catching only specific errors
 macro TryCatch(exception, expr)
   quote
@@ -78,7 +85,7 @@ macro TryCatch(exception, expr)
       Success{typeof(r)}(r)
     catch exc
       if exc isa $(esc(exception))
-        Failure{Any}(exc, Base.catch_stack())
+        Failure(exc, Base.catch_stack())
       else
         rethrow()
       end
@@ -86,60 +93,36 @@ macro TryCatch(exception, expr)
   end
 end
 
-macro TryCatch(T, exception, expr)
-  quote
-    r = try
-      $(esc(expr))
-    catch exc
-      if exc isa $(esc(exception))
-        Failure{$T}(exc, Base.catch_stack())
-      else
-        rethrow()
-      end
-    end
-    Try{$T}(r)
-  end
-end
+issuccess(::Success) = true
+issuccess(::Failure) = false
 
-issuccess(t::Try) = try_issuccess(t)
-try_issuccess(::Success) = true
-try_issuccess(::Failure) = false
+isfailure(::Success) = false
+isfailure(::Failure) = true
 
-isfailure(t::Try) = try_isfailure(t)
-try_isfailure(::Success) = false
-try_isfailure(::Failure) = true
+Base.get(t::Success) = t.value
+Base.get(::Failure) = nothing
 
-Base.get(t::Try) = try_get(t)
-try_get(t::Success) = t.value
-try_get(::Failure) = nothing
-
-getOption(t::Try) = try_getOption(t)
-try_getOption(t::Success) = Some(t.value)
-try_getOption(::Failure{T}) where T = None{T}()
+getOption(t::Success) = Some(t.value)
+getOption(::Failure) = none
 
 Base.eltype(::Type{<:Try{T}}) where T = T
+Base.eltype(::Type{<:Success{T}}) where T = T
+Base.eltype(::Type{<:Failure}) = Any
 Base.eltype(::Type{<:Try}) = Any
 
-Base.iterate(t::Try, state...) = try_iterate(t, state...)
-try_iterate(t::Success) = t.value, nothing
-try_iterate(t::Success, state) = state
-try_iterate(t::Failure) = nothing
+Base.iterate(t::Success) = t.value, nothing
+Base.iterate(t::Success, state) = state
+Base.iterate(t::Failure) = nothing
 
-Base.foreach(f, t::Try) = try_foreach(f, t)
-try_foreach(f, t::Success) = f(t.value); nothing
-try_foreach(f, t::Failure) = nothing
+Base.foreach(f, t::Success) = f(t.value); nothing
+Base.foreach(f, t::Failure) = nothing
 
-Base.map(f, t::Try) = try_map(f, t)
-try_map(f, x::Success) = @Try f(x.value)
-function try_map(f, t::Failure{T}) where T
-  _T2 = Out(f, T)
-  T2 = _T2 === NotApplicable ? Any : _T2
-  Failure{T2}(t.exception, t.stack)
-end
+Base.map(f, t::Success) = @Try f(t.value)
+Base.map(f, t::Failure) = t
 
-Iterators.flatten(t::Try) = try_flatten(t)
-try_flatten(x::Failure) = x
-try_flatten(x::Success) = convert(Try, x.value)
+Iterators.flatten(x::Failure) = x
+Iterators.flatten(x::Success) = convert(Try, x.value)
+
 
 
 # support for combining exceptions

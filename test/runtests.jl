@@ -1,6 +1,5 @@
 using Test
 using DataTypesBasic
-DataTypesBasic.@overwrite_Base
 
 @testset "Const" begin
   include("Const.jl")
@@ -20,3 +19,5 @@ end
 @testset "ContextManager" begin
   include("ContextManager.jl")
 end
+
+# TODO test typejoin rules

@@ -1,102 +1,106 @@
-abstract type Either{L, R} end
-
-# variable naming taken from Base.Some
-struct Left{L, R} <: Either{L, R}
+struct Left{L}
   value::L
 end
-Left{L}(x::L) where {L} = Left{L, Any}(x)
-Left(x::L) where {L} = Left{L, Any}(x)
-# TODO the typecast conflict with nested applications
-# Left{L, R}(x::Left{L}) where {L, R} = Left{L, R}(x.value)
-# Left{R}(x::Left{L}) where {L, R} = Left{L, R}(x.value)
 
-struct Right{L, R} <: Either{L, R}
+struct Right{R}
   value::R
 end
-Right{L}(x::R) where {L, R} = Right{L, R}(x)
-Right(x::R) where {R} = Right{Any, R}(x)
-# TODO the typecast conflict with nested applications
-# Right{L}(x::Right{<:Any, R}) where {L, R} = Right{L, R}(x.value)
 
-# TODO the typecast conflict with nested applications
-# Either{L, R}(x::Left{L}) where {L, R} = Left{L, R}(x.value)
-# Either{L, R}(x::Right{<:Any, R}) where {L, R} = Right{L, R}(x.value)
-Either{L, R}(x::L) where {L, R} = Left{L, R}(x)
-Either{L, R}(x::R) where {L, R} = Right{L, R}(x)
-Either{L, R}(x::L) where {L, R} = Left{L, R}(x)
-Either{L, R}(x::R) where {L, R} = Right{L, R}(x)
+const Either{L, R} = Union{Left{L}, Right{R}}
+Either{L, R}(x::L) where {L, R} = Left(x)
+Either{L, R}(x::R) where {L, R} = Right(x)
+Either{L}(x::R) where {L, R} = Right(x)
+Either{L}(x::L) where {L} = Left(x)
 
-Either{L}(x::R) where {L, R} = Right{L, R}(x)
-Either{L}(x::L) where {L} = Left{L, Any}(x)
+
+# conversions/ promotions
+
+# typejoin Left & Left
+Base.typejoin(::Type{Left{L}}, ::Type{Left{L}}) where L = Left{L}
+Base.typejoin(::Type{<:Left}, ::Type{<:Left}) = Left
+# typejoin Right & Right
+Base.typejoin(::Type{Right{R}}, ::Type{Right{R}}) where R = Right{R}
+Base.typejoin(::Type{<:Right}, ::Type{<:Right}) = Right
+# typejoin Left & Right
+Base.typejoin(::Type{Left{L}}, ::Type{Right{R}}) where {L, R} = Either{L, R}
+Base.typejoin(::Type{Right{R}}, ::Type{Left{L}}) where {L, R} = Either{L, R}
+# typejoin Left & Either
+Base.typejoin(::Type{Left{L}}, ::Type{<:Either{L, R}}) where {L, R} = Either{L, R}
+Base.typejoin(::Type{<:Either{L, R}}, ::Type{Left{L}}) where {L, R} = Either{L, R}
+Base.typejoin(::Type{<:Left}, ::Type{<:Either{<:Any, R}}) where {R} = Either{<:Any, R}
+Base.typejoin(::Type{<:Either{<:Any, R}}, ::Type{<:Left}) where {R} = Either{<:Any, R}
+# typejoin Right & Either
+Base.typejoin(::Type{Right{R}}, ::Type{<:Either{L, R}}) where {L, R} = Either{L, R}
+Base.typejoin(::Type{<:Either{L, R}}, ::Type{Right{R}}) where {L, R} = Either{L, R}
+Base.typejoin(::Type{<:Right}, ::Type{<:Either{L}}) where {L} = Either{L}
+Base.typejoin(::Type{<:Either{L}}, ::Type{<:Right}) where {L} = Either{L}
+# typejoin Either & Either
+Base.typejoin(::Type{<:Either{L, R}}, ::Type{<:Either{L, R}}) where {L, R} = Either{L, R}
+Base.typejoin(::Type{<:Either{L}}, ::Type{<:Either{L}}) where {L} = Either{L}
+Base.typejoin(::Type{<:Either{<:Any, R}}, ::Type{<:Either{<:Any, R}}) where {R} = Either{<:Any, R}
+Base.typejoin(::Type{<:Either}, ::Type{<:Either}) = Either
+
+# Left/Right are covariate
+Base.convert(::Type{Right{T}}, x::Right{S}) where {S, T} = Right(Base.convert(T, x.value))
+Base.convert(::Type{Left{T}}, x::Left{S}) where {S, T} = Left(Base.convert(T, x.value))
+Base.convert(::Type{Either{L, R2}}, x::Right{R}) where {L, R, R2} = Right(Base.convert(R2, x.value))
+Base.convert(::Type{Either{L2, R}}, x::Left{L}) where {L, L2, R} = Left(Base.convert(L2, x.value))
+promote_rule(::Type{Left{T}}, ::Type{Left{S}}) where {T, S<:T} = Left{T}
+promote_rule(::Type{Right{T}}, ::Type{Right{S}}) where {T, S<:T} = Right{T}
 
 
 # == controversy https://github.com/JuliaLang/julia/issues/4648
-Base.:(==)(a::Either, b::Either) = either_compare(a, b)
-either_compare(a::Right, b::Right) = a.value == b.value
-either_compare(a::Left, b::Right) = false
-either_compare(a::Right, b::Left) = false
-either_compare(a::Left, b::Left) = a.value == b.value
+Base.:(==)(a::Right, b::Right) = a.value == b.value
+Base.:(==)(a::Left, b::Right) = false
+Base.:(==)(a::Right, b::Left) = false
+Base.:(==)(a::Left, b::Left) = a.value == b.value
 
 # TypeClasses.unionall_implementationdetails(::Type{<:Either{L, R}}) where {L, R} = Either{L, R}
 # Traits.leaftypes(::Type{Either}) = [Either{newtype(), newtype(), Left}, Either{newtype(), newtype(), Right}]
 # Traits.leaftypes(::Type{Either{T}}) where T = [Either{T, newtype(), Left}, Either{T, newtype(), Right}]
 
 
-function either(left_false::L, comparison::Bool, right_true::R) where {L, R}
-  comparison ? Right{L, R}(right_true) : Left{L, R}(left_false)
+function either(left_false, comparison::Bool, right_true)
+  comparison ? Right(right_true) : Left(left_false)
 end
 
-flip(x::Left{L, R}) where {L, R} = Right{R, L}(x.value)
-flip(x::Right{L, R}) where {L, R} = Left{R, L}(x.value)
+flip_left_right(x::Left) = Right(x.value)
+flip_left_right(x::Right) = Left(x.value)
 
-isleft(e::Either) = either_isleft(e)
-either_isleft(e::Left) = true
-either_isleft(e::Right) = false
+isleft(e::Left) = true
+isleft(e::Right) = false
 
-isright(e::Either) = either_isright(e)
-either_isright(e::Left) = false
-either_isright(e::Right) = true
+isright(e::Left) = false
+isright(e::Right) = true
 
-getleft(e::Either) = either_getleft(e)
-either_getleft(e::Left) = e.value
-either_getleft(e::Right) = nothing
+getleft(e::Left) = e.value
+getleft(e::Right) = nothing
 
-getright(e::Either) = either_getright(e)
-either_getright(e::Left) = nothing
-either_getright(e::Right) = e.value
+getright(e::Left) = nothing
+getright(e::Right) = e.value
 
-getleftOption(e::Either) = either_getleftOption(e)
-either_getleftOption(e::Left{L, R}) where {L, R} = Some{L}(e.value)
-either_getleftOption(e::Right{L, R}) where {L, R} = None{L}()
+getleftOption(e::Left{L}) where {L} = Some{L}(e.value)
+getleftOption(e::Right) = nothing
 
-getrightOption(e::Either) = either_getrightOption(e)
-either_getrightOption(e::Left{L, R}) where {L, R} = None{R}()
-either_getrightOption(e::Right{L, R}) where {L, R} = Some{R}(e.value)
+getrightOption(e::Left) = nothing
+getrightOption(e::Right{R}) where {R} = Some{R}(e.value)
 
 Base.get(e::Either) = getright(e)
 getOption(e::Either) = getrightOption(e)
 
 Base.eltype(::Type{<:Either{L, R}}) where {L, R} = R
+Base.eltype(::Type{<:Left{L}}) where L = Any  # we have to specify this clause as otherwise we get ERROR: UndefVarError: R not defined
 Base.eltype(::Type{<:Either}) = Any
 
-Base.iterate(e::Either, state...) = either_iterate(e, state...)
-either_iterate(e::Right) = e.value, nothing
-either_iterate(e::Right, state) = state
-either_iterate(e::Left) = nothing
+Base.iterate(e::Right) = e.value, nothing
+Base.iterate(e::Right, state) = state
+Base.iterate(e::Left) = nothing
 
-Base.foreach(f, x::Either) = either_foreach(f, x)
-either_foreach(f, x::Right) = f(x.value); nothing
-either_foreach(f, x::Left) = nothing
+Base.foreach(f, x::Right) = f(x.value); nothing
+Base.foreach(f, x::Left) = nothing
 
-Base.map(f, x::Either) = either_map(f, x)
-either_map(f, x::Right{L}) where {L} = Right{L}(f(x.value))
-function either_map(f, x::Left{L, R}) where {L, R}
-  _R2 = Out(f, R)
-  R2 = _R2 === NotApplicable ? Any : _R2
-  Left{L, R2}(x.value)
-end
+Base.map(f, x::Right) = Right(f(x.value))
+Base.map(f, x::Left) = x
 
-Iterators.flatten(e::Either) = either_flatten(e)
-either_flatten(x::Right) = convert(Either, x.value)
-either_flatten(x::Left) = x
-either_flatten(x::Left{L, E}) where {L, R, E <: Either{L, R}} = Left{L, R}(x.value)  # just to have better type support
+Iterators.flatten(x::Right) = convert(Either, x.value)
+Iterators.flatten(x::Left) = x

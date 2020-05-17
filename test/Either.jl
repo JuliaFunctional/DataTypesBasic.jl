@@ -5,3 +5,6 @@
 @test getleft(Either{String}(3)) == nothing
 @test getrightOption(Either{String}(3)) == Option(3)
 @test getleftOption(Either{String}(3)) == Option{String}(nothing)
+
+@test eltype(Either{Int, String}) == String
+@test eltype(Right{String}) == String

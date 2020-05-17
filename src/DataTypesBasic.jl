@@ -29,11 +29,10 @@ functions, we go with Approach 2. That applies to Option, Try and Either.
 """
 module DataTypesBasic
 
-export @overwrite_Some,
-  Const,
+export Const,
   Identity,
-  Option, None, Some, issomething, iftrue, iffalse, getOption, # isnothing comes from Base
-  Either, Left, Right, either, isleft, isright, getleft, getright, getleftOption, getrightOption, getEither,
+  Option, issomething, iftrue, iffalse, getOption, # isnothing, Nothing, Some comes from Base
+  Either, Left, Right, either, isleft, isright, getleft, getright, getleftOption, getrightOption, getEither, flip_left_right,
   Try, Success, Failure, @Try, @TryCatch, issuccess, isfailure, MultipleExceptions,
   ContextManager, @ContextManager
 
@@ -47,18 +46,5 @@ include("Either.jl")
 include("ContextManager.jl")
 include("convert.jl")
 
-macro overwrite_Base()
-  esc(quote
-    const Some = DataTypesBasic.Some
-    nothing
-  end)
-end
-
-macro overwrite_Some()
-  esc(quote
-    const Some = DataTypesBasic.Some
-    nothing
-  end)
-end
 
 end # module

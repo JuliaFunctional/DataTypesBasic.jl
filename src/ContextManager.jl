@@ -47,13 +47,9 @@ Base.map(f, c::ContextManager) = @ContextManager cont -> begin
   c(x -> cont(f(x)))
 end
 
-# we do flatten via a mere TypeWrapper to be able to do flattening at runtime if type inference is not good enough
-Iterators.flatten(c::ContextManager) = map(FlattenMe, c)
-function Iterators.flatten(contextmanager::ContextManager)
-  @ContextManager cont -> begin
-    # execute both nested ContextManagers in the nested manner
-    contextmanager() do inner_contextmanager
-      convert(ContextManager, inner_contextmanager)(cont)
-    end
+Iterators.flatten(contextmanager::ContextManager) = @ContextManager cont -> begin
+  # execute both nested ContextManagers in the nested manner
+  contextmanager() do inner_contextmanager
+    convert(ContextManager, inner_contextmanager)(cont)
   end
 end

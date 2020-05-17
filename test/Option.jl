@@ -1,6 +1,5 @@
 using Test
 using DataTypesBasic
-DataTypesBasic.@overwrite_Base
 
 @test issomething(Option(5))
 @test !issomething(Option(nothing))
@@ -11,3 +10,7 @@ DataTypesBasic.@overwrite_Base
   54
 end == Option{Int}(nothing)
 @test iffalse(2==3, 54) == Option{Int}(54)
+
+@test eltype(Option{Int}) == Int
+@test eltype(Some{Int}) == Int
+@test eltype(Nothing) == Any
