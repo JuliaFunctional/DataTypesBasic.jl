@@ -1,9 +1,11 @@
-const Option{T} = Union{Nothing, Some{T}}
+# we don't use Some because it does not behave like a container, but more like `Ref`
+# for details/update see https://github.com/JuliaLang/julia/issues/35911
+const Option{T} = Union{Nothing, Identity{T}}
 
 Option{T}(a::Nothing) where T = nothing
-Option{T}(a::T) where T = Some{T}(a)
+Option{T}(a::T) where T = Identity{T}(a)
 Option(a::Nothing) = nothing
-Option(a::T) where T = Some{T}(a)
+Option(a::T) where T = Identity{T}(a)
 Option{T}() where T = nothing
 Option() = nothing
 
@@ -34,38 +36,21 @@ Base.convert(::Type{Option}, x::Option) = x
 # Option{T} seems to be already covered by normal Union, Some, Nothing conversions, no need to provide them
 
 function iftrue(func::Function, b::Bool)
-  b ? Some(func()) : nothing
+  b ? Identity(func()) : nothing
 end
 function iftrue(b::Bool, t)
-  b ? Some(t) : nothing
+  b ? Identity(t) : nothing
 end
 function iffalse(func::Function, b::Bool)
-  !b ? Some(func()) : nothing
+  !b ? Identity(func()) : nothing
 end
 function iffalse(b::Bool, t)
-  !b ? Some(t) : nothing
+  !b ? Identity(t) : nothing
 end
 
 issomething(m::Nothing) = false
-issomething(m::Some) = true
-
-Base.get(m::Some) = m.value
-Base.get(m::Nothing) = nothing
+issomething(m::Identity) = true
 
 # Base.eltype is not well defined for Some, and always returns Any
 Base.eltype(::Type{<:Option{T}}) where {T} = T
 Base.eltype(::Type{Nothing}) = Any  # if we don't provide this clause, we get ERROR: UndefVarError: T not defined, as the above clause matches, but no T can be infered from Nothing
-
-
-Base.iterate(o::Some) = o.value, nothing
-Base.iterate(o::Some, state) = state
-Base.iterate(o::Nothing) = nothing
-
-Base.foreach(f, o::Some) = f(o.value); nothing
-Base.foreach(f, o::Nothing) = nothing
-
-Base.map(f, o::Some) = Some(f(o.value))
-Base.map(f, ::Nothing) = nothing
-
-Iterators.flatten(x::Nothing) = x
-Iterators.flatten(x::Some) = convert(Option, x.value)

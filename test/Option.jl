@@ -12,5 +12,6 @@ end == Option{Int}(nothing)
 @test iffalse(2==3, 54) == Option{Int}(54)
 
 @test eltype(Option{Int}) == Int
-@test eltype(Some{Int}) == Int
+@test eltype(Identity{Int}) == Int
+@test eltype(Option) == Any
 @test eltype(Nothing) == Any

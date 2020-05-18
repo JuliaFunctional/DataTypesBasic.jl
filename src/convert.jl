@@ -1,32 +1,24 @@
 # conversions among Identity, Option, Try, Either, Vector
 # =======================================================
 
-# Identity
-Base.convert(::Type{<:Option}, x::Identity) = Option(x.value)
-Base.convert(::Type{<:Try}, x::Identity) = Success(x.value)
-Base.convert(::Type{<:Either}, x::Identity) = Right(x.value)
+# Vector
 Base.convert(::Type{<:Vector}, x::Identity) = [x.value]
+Base.convert(::Type{<:Vector}, x::Nothing) = []
+Base.convert(::Type{<:Vector}, x::Stop) = []
 
-# Option
-Base.convert(::Type{<:Vector}, x::Option) = option_asVector(x)
-option_asVector(x::Some) = [x.value]
-option_asVector(x::Nothing) = []
-Base.convert(::Type{<:Either}, x::Option) = option_asEither(x)
-option_asEither(x::Some) = Right(x.value)
-option_asEither(x::Nothing) = Left(nothing)
+# Stop
+Base.convert(::Type{<:Stop}, x::Nothing) = Stop(nothing)
+function Base.convert(::Type{Stop}, x::Vector)
+  @assert !isempty(x) "can only convert empty Vector to Nothing, got $(x)"
+  Stop([])
+end
 
+# Nothing
+function Base.convert(::Type{Nothing}, x::Vector)
+  @assert !isempty(x) "can only convert empty Vector to Nothing, got $(x)"
+  nothing
+end
 
-# Try
-Base.convert(::Type{<:Option}, x::Try) = getOption(x)
-Base.convert(::Type{<:Either}, x::Try) = try_asEither(x)
-try_asEither(x::Success) = Right(x.value)
-try_asEither(x::Failure{T}) where T = Left(x.value)
-Base.convert(::Type{<:Vector}, x::Try) = try_asVector(x)
-try_asVector(t::Success) = [t.value]
-try_asVector(t::Failure) = []
-
-# Either
-Base.convert(::Type{<:Option}, e::Either) = getOption(e)
-Base.convert(::Type{<:Vector}, e::Either) = either_asVector(e)
-either_asVector(e::Right) = [e.value]
-either_asVector(e::Left) = []
+# Identity
+# Nothing and Stop are just passed through when asked to convert to identity
+Base.convert(::Type{Identity}, x::Union{Nothing, Stop}) = x
