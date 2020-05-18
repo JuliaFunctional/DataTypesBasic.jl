@@ -37,6 +37,7 @@ export Const, Identity,
 
 using IsDef
 
+include("Nothing.jl")
 include("Const.jl")
 include("Identity.jl")
 include("Option.jl")

@@ -31,7 +31,6 @@ Base.hash(a::Some) = hash(a.value)
 #  [2] convert(::Type{Union{Nothing, Some{T}} where T}, ::Int64) at ./some.jl:34
 #  [3] top-level scope at none:0
 # importantly, we should only add clauses for Type{Option} and not Type{<:Option} to not interfere with existing code
-Base.convert(::Type{Option}, x) = throw(MethodError(Base.convert, (Option, x)))
 Base.convert(::Type{Option}, x::Option) = x
 # Option{T} seems to be already covered by normal Union, Some, Nothing conversions, no need to provide them
 
@@ -51,6 +50,5 @@ end
 issomething(m::Nothing) = false
 issomething(m::Identity) = true
 
-# Base.eltype is not well defined for Some, and always returns Any
-Base.eltype(::Type{<:Option{T}}) where {T} = T
-Base.eltype(::Type{Nothing}) = Any  # if we don't provide this clause, we get ERROR: UndefVarError: T not defined, as the above clause matches, but no T can be infered from Nothing
+Base.eltype(::Type{Option{T}}) where {T} = T
+Base.eltype(::Type{Option}) = Any

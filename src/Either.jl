@@ -30,9 +30,9 @@ Base.typejoin(::Type{<:Either}, ::Type{<:Either}) = Either
 Base.convert(::Type{Either{L, R}}, x::Identity) where {L, R} = Identity(Base.convert(R, x.value))
 Base.convert(::Type{Either{L, R}}, x::Const) where {L, R} = Const(Base.convert(L, x.value))
 
-Base.eltype(::Type{<:Either{L, R}}) where {L, R} = R
-Base.eltype(::Type{<:Either{<:Any, R}}) where {R} = R
-Base.eltype(::Type{<:Either}) = Any
+Base.eltype(::Type{Either{L, R}}) where {L, R} = R
+Base.eltype(::Type{Either{<:Any, R}}) where {R} = R
+Base.eltype(::Type{Either}) = Any
 
 
 # Helpers for Either

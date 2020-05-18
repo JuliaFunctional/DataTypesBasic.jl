@@ -81,35 +81,6 @@ Base.convert(::Type{Try{T}}, x::Identity{S}) where {S, T} = Identity(Base.conver
 promote_rule(::Type{Try{T}}, ::Type{Try{S}}) where {T, S<:T} = Try{T}
 
 
-
-# typejoin Thrown & Thrown
-# Base.typejoin(::Type{Thrown{E}}, ::Type{Thrown{E}}) where E = Thrown{E}
-# Base.typejoin(::Type{<:Thrown}, ::Type{<:Thrown}) = Thrown
-# # typejoin Identity & Identity
-# Base.typejoin(::Type{Identity{T}}, ::Type{Identity{T}}) where T = Identity{E}
-# Base.typejoin(::Type{<:Identity}, ::Type{<:Identity}) = Identity
-# # typejoin Thrown & Identity
-# Base.typejoin(::Type{Thrown{E}}, ::Type{Identity{T}}) where {T, E} = Try{T, E}
-# Base.typejoin(::Type{Identity{T}}, ::Type{Thrown{E}}) where {T, E} = Try{T, E}
-# # typejoin Thrown & Try
-# Base.typejoin(::Type{Thrown{E}}, ::Type{<:Try{T, E}}) where {T, E} = Try{T, E}
-# Base.typejoin(::Type{<:Try{T, E}}, ::Type{Thrown{E}}) where {T, E} = Try{T, E}
-# Base.typejoin(::Type{<:Thrown}, ::Type{<:Try{T}}) where T = Try{T}
-# Base.typejoin(::Type{<:Try{T}}, ::Type{<:Thrown}) where T = Try{T}
-# # typejoin Identity & Try
-# Base.typejoin(::Type{Identity{T}}, ::Type{<:Try{T, E}}) where {T, E} = Try{T, E}
-# Base.typejoin(::Type{<:Try{T, E}}, ::Type{Identity{T}}) where {T, E} = Try{T, E}
-# Base.typejoin(::Type{<:Identity}, ::Type{<:Try{<:Any, E}}) where E = Try{<:Any, E}
-# Base.typejoin(::Type{<:Try{<:Any, E}}, ::Type{<:Identity}) where E = Try{<:Any, E}
-# # typejoin Try & Try
-# Base.typejoin(::Type{<:Try{T, E}}, ::Type{<:Try{T, E}}) where {T, E} = Try{T, E}
-# Base.typejoin(::Type{<:Try{T}}, ::Type{<:Try{T}}) where {T} = Try{T}
-# Base.typejoin(::Type{<:Try{<:Any, E}}, ::Type{<:Try{<:Any, E}}) where {E} = Try{<:Any, E}
-# Base.typejoin(::Type{<:Try}, ::Type{<:Try}) = Try
-
-
-
-
 # we use a macro instead of dispatching on Try(f::Function) as this interferes e.g. with mapn
 # (in mapn anonymous functions are passed through, which should not get executed automatically)
 macro Try(expr)
@@ -145,7 +116,5 @@ issuccess(::Const{<:Exception}) = false
 isexception(::Identity) = false
 isexception(::Const{<:Exception}) = true
 
-Base.eltype(::Type{<:Try{T}}) where T = T
-Base.eltype(::Type{<:Try}) = Any
-# somehow the normal Const eltype got broken
-Base.eltype(::Type{<:Const{<:Exception}}) = Any
+Base.eltype(::Type{Try{T}}) where T = T
+Base.eltype(::Type{Try}) = Any
