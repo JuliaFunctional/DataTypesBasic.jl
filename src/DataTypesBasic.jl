@@ -29,18 +29,16 @@ functions, we go with Approach 2. That applies to Option, Try and Either.
 """
 module DataTypesBasic
 
-export Const,
-  Identity, Stop,
+export Const, Identity,
   Option, issomething, iftrue, iffalse, getOption, # isnothing, Nothing, Some comes from Base
   Either, either, isleft, isright, getleft, getright, getleftOption, getrightOption, flip_left_right,
-  Try, Failure, @Try, @TryCatch, issuccess, isfailure, MultipleExceptions,
+  Try, Thrown, @Try, @TryCatch, issuccess, isexception, MultipleExceptions,
   ContextManager, @ContextManager
 
 using IsDef
 
 include("Const.jl")
 include("Identity.jl")
-include("Stop.jl")
 include("Option.jl")
 include("Try.jl")
 include("Either.jl")

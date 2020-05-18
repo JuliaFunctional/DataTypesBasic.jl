@@ -8,6 +8,10 @@ function Base.show(io::IO, x::Identity)
   print(io, "Identity($(repr(x.value)))")
 end
 
+isidentity(::Identity) = true
+isidentity(other) = false
+
+
 Base.get(a::Identity) = a.value
 Base.eltype(::Type{<:Identity{T}}) where T = T
 Base.eltype(::Type{<:Identity}) = Any

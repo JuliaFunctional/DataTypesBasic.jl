@@ -1,34 +1,37 @@
-const Try{T} = Union{Stop{<:Exception}, Identity{T}}
+const Try{T} = Union{Const{<:Exception}, Identity{T}}
 Try(t) = Identity(t)
-Try(t::Exception) = Stop(t)
+Try(t::Exception) = Const(t)
 Try{T}(t::T) where T = Identity(t)
-Try{T}(other) where T = Stop(other)
+Try{T}(other) where T = Const(other)
 
 
 
 """
-Failure is like Exception, however can also cary stacktraces
+Thrown is like Exception, however can also cary stacktraces
 """
-struct Failure{E} <: Exception
+struct Thrown{E} <: Exception
   exception::E
   stacktrace::Vector
 end
 
 # == controversy https://github.com/JuliaLang/julia/issues/4648
-function Base.:(==)(a::Failure, b::Failure)
+function Base.:(==)(a::Thrown, b::Thrown)
   a.exception == b.exception && a.stack == b.stack
 end
 
+function Base.show(io::IO, x::Thrown)
+  print(io, "Thrown($(repr(x.exception)))")
+end
 
 # Multiline version, following https://docs.julialang.org/en/v1/manual/types/#man-custom-pretty-printing-1
-function Base.show(io::IO, ::MIME"text/plain", exc::Failure{E}) where {E}
-  println(io, "Failure{$E}($(repr(exc.exception)))")
+function Base.show(io::IO, ::MIME"text/plain", exc::Thrown{E}) where {E}
+  println(io, "Thrown($(repr(exc.exception)))")
   for (exc′, bt′) in exc.stacktrace
     showerror(io, exc′, bt′)
     println(io)
   end
 end
-function Base.showerror(io::IO, ::MIME"text/plain", exc::Failure)
+function Base.showerror(io::IO, ::MIME"text/plain", exc::Thrown)
   Base.show(io, MIME"text/plain"(), exc)
 end
 
@@ -66,9 +69,9 @@ function Base.showerror(io::IO, ::MIME"text/plain", exc::MultipleExceptions)
   Base.show(io, MIME"text/plain"(), exc)
 end
 
-Base.merge(f1::Failure, f2::Failure) = MultipleExceptions((f1, f2))
-Base.merge(f::Failure, e::Exception) = MultipleExceptions((f, e))
-Base.merge(e::Exception, f::Failure) = MultipleExceptions((e, f))
+Base.merge(f1::Thrown, f2::Thrown) = MultipleExceptions((f1, f2))
+Base.merge(f::Thrown, e::Exception) = MultipleExceptions((f, e))
+Base.merge(e::Exception, f::Thrown) = MultipleExceptions((e, f))
 Base.merge(es::MultipleExceptions, e::Exception) = MultipleExceptions(tuple(es.exceptions..., e))
 Base.merge(e::Exception, fs::MultipleExceptions) = MultipleExceptions(tuple(e, fs.exceptions...))
 Base.merge(es1::MultipleExceptions, es2::MultipleExceptions) = MultipleExceptions(tuple(es1.exceptions..., es2.exceptions...))
@@ -79,20 +82,20 @@ promote_rule(::Type{Try{T}}, ::Type{Try{S}}) where {T, S<:T} = Try{T}
 
 
 
-# typejoin Failure & Failure
-# Base.typejoin(::Type{Failure{E}}, ::Type{Failure{E}}) where E = Failure{E}
-# Base.typejoin(::Type{<:Failure}, ::Type{<:Failure}) = Failure
+# typejoin Thrown & Thrown
+# Base.typejoin(::Type{Thrown{E}}, ::Type{Thrown{E}}) where E = Thrown{E}
+# Base.typejoin(::Type{<:Thrown}, ::Type{<:Thrown}) = Thrown
 # # typejoin Identity & Identity
 # Base.typejoin(::Type{Identity{T}}, ::Type{Identity{T}}) where T = Identity{E}
 # Base.typejoin(::Type{<:Identity}, ::Type{<:Identity}) = Identity
-# # typejoin Failure & Identity
-# Base.typejoin(::Type{Failure{E}}, ::Type{Identity{T}}) where {T, E} = Try{T, E}
-# Base.typejoin(::Type{Identity{T}}, ::Type{Failure{E}}) where {T, E} = Try{T, E}
-# # typejoin Failure & Try
-# Base.typejoin(::Type{Failure{E}}, ::Type{<:Try{T, E}}) where {T, E} = Try{T, E}
-# Base.typejoin(::Type{<:Try{T, E}}, ::Type{Failure{E}}) where {T, E} = Try{T, E}
-# Base.typejoin(::Type{<:Failure}, ::Type{<:Try{T}}) where T = Try{T}
-# Base.typejoin(::Type{<:Try{T}}, ::Type{<:Failure}) where T = Try{T}
+# # typejoin Thrown & Identity
+# Base.typejoin(::Type{Thrown{E}}, ::Type{Identity{T}}) where {T, E} = Try{T, E}
+# Base.typejoin(::Type{Identity{T}}, ::Type{Thrown{E}}) where {T, E} = Try{T, E}
+# # typejoin Thrown & Try
+# Base.typejoin(::Type{Thrown{E}}, ::Type{<:Try{T, E}}) where {T, E} = Try{T, E}
+# Base.typejoin(::Type{<:Try{T, E}}, ::Type{Thrown{E}}) where {T, E} = Try{T, E}
+# Base.typejoin(::Type{<:Thrown}, ::Type{<:Try{T}}) where T = Try{T}
+# Base.typejoin(::Type{<:Try{T}}, ::Type{<:Thrown}) where T = Try{T}
 # # typejoin Identity & Try
 # Base.typejoin(::Type{Identity{T}}, ::Type{<:Try{T, E}}) where {T, E} = Try{T, E}
 # Base.typejoin(::Type{<:Try{T, E}}, ::Type{Identity{T}}) where {T, E} = Try{T, E}
@@ -115,7 +118,7 @@ macro Try(expr)
       r = $(esc(expr))
       Identity{typeof(r)}(r)
     catch exc
-      Stop(Failure(exc, Base.catch_stack()))
+      Const(Thrown(exc, Base.catch_stack()))
     end
   end
 end
@@ -128,7 +131,7 @@ macro TryCatch(exception, expr)
       Identity{typeof(r)}(r)
     catch exc
       if exc isa $(esc(exception))
-        Stop(Failure(exc, Base.catch_stack()))
+        Const(Thrown(exc, Base.catch_stack()))
       else
         rethrow()
       end
@@ -137,12 +140,12 @@ macro TryCatch(exception, expr)
 end
 
 issuccess(::Identity) = true
-issuccess(::Stop{<:Exception}) = false
+issuccess(::Const{<:Exception}) = false
 
-isfailure(::Identity) = false
-isfailure(::Stop{<:Exception}) = true
+isexception(::Identity) = false
+isexception(::Const{<:Exception}) = true
 
 Base.eltype(::Type{<:Try{T}}) where T = T
 Base.eltype(::Type{<:Try}) = Any
-# somehow the normal Stop eltype got broken
-Base.eltype(::Type{<:Stop{<:Exception}}) = Any
+# somehow the normal Const eltype got broken
+Base.eltype(::Type{<:Const{<:Exception}}) = Any

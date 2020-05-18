@@ -1,9 +1,9 @@
 @test issuccess(@Try 5)
 @test !issuccess(@Try error("hi"))
-@test isfailure(@Try error("hi"))
-@test !isfailure(@Try 5)
+@test isexception(@Try error("hi"))
+@test !isexception(@Try 5)
 
-@test (@Try error("hi")) isa Stop{<:Failure}
+@test (@Try error("hi")) isa Const{<:Thrown}
 
 
 me = MultipleExceptions(ErrorException("hi"))
@@ -13,5 +13,5 @@ me = MultipleExceptions(ErrorException("hi"))
 
 @test eltype(Try{Int}) == Int
 @test eltype(Identity{Int}) == Int
-@test eltype(Failure) == Any
-@test eltype(Stop{Failure}) == Any
+@test eltype(Thrown) == Any
+@test eltype(Const{Thrown}) == Any

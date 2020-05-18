@@ -4,13 +4,13 @@
 # Vector
 Base.convert(::Type{<:Vector}, x::Identity) = [x.value]
 Base.convert(::Type{<:Vector}, x::Nothing) = []
-Base.convert(::Type{<:Vector}, x::Stop) = []
+Base.convert(::Type{<:Vector}, x::Const) = []
 
-# Stop
-Base.convert(::Type{<:Stop}, x::Nothing) = Stop(nothing)
-function Base.convert(::Type{Stop}, x::Vector)
+# Const
+Base.convert(::Type{<:Const}, x::Nothing) = Const(nothing)
+function Base.convert(::Type{Const}, x::Vector)
   @assert !isempty(x) "can only convert empty Vector to Nothing, got $(x)"
-  Stop([])
+  Const([])
 end
 
 # Nothing
@@ -20,5 +20,5 @@ function Base.convert(::Type{Nothing}, x::Vector)
 end
 
 # Identity
-# Nothing and Stop are just passed through when asked to convert to identity
-Base.convert(::Type{Identity}, x::Union{Nothing, Stop}) = x
+# Nothing and Const are just passed through when asked to convert to identity
+Base.convert(::Type{Identity}, x::Union{Nothing, Const}) = x
