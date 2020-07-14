@@ -9,8 +9,8 @@ Approach 1.
 ===========
 
 Advantages: Providing definitions for the concrete is actually enough for typeinference
-Disadvantages: The typeinference like for ``Dict(:a => Some(1), :b => None())`` would infer
-  ``Dict{Symbol, Any}`` instead of `Dict{Symbol, Union{Some, None}}`.
+Disadvantages: The typeinference like for `Dict(:a => Some(1), :b => None())` would infer
+  `Dict{Symbol, Any}` instead of `Dict{Symbol, Union{Some, None}}`.
 
   The internal details for this is that in many cases `Base.promote_typejoin(type1, type2)` is used to come up
   with a common type.
@@ -20,7 +20,7 @@ Disadvantages: The typeinference like for ``Dict(:a => Some(1), :b => None())`` 
 Approach 2.
 ===========
 
-Advantages: ``Dict(:a => Some(1), :b => None())`` would indeed infer ``Dict{Symbol, Option}``
+Advantages: `Dict(:a => Some(1), :b => None())` would indeed infer `Dict{Symbol, Option}`
 Disadvantages: you need to be careful to always implement functionalities first on separate functions unique to the
   sealed type, and then point generic functions to the specific one via `genericfunction(o::Option) = optionfunction(o)`
 
@@ -32,11 +32,14 @@ module DataTypesBasic
 export Const, Identity,
   Option, issomething, iftrue, iffalse, getOption, # isnothing, Nothing, Some comes from Base
   Either, either, isleft, isright, getleft, getright, getleftOption, getrightOption, flip_left_right,
+  OptionEither,
   Try, Thrown, @Try, @TryCatch, issuccess, isexception, MultipleExceptions,
   ContextManager, @ContextManager
 
+using Compat
 using IsDef
 
+# type definitions
 include("Nothing.jl")
 include("Const.jl")
 include("Identity.jl")
@@ -44,7 +47,10 @@ include("Option.jl")
 include("Try.jl")
 include("Either.jl")
 include("ContextManager.jl")
-include("convert.jl")
+include("OptionEither.jl")
 
+# interoperability between types
+include("promote_type.jl")
+include("convert.jl")
 
 end # module

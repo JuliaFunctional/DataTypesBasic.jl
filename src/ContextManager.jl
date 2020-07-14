@@ -9,7 +9,7 @@ function which expects one argument, which itself is a function. Think of it lik
 function contextmanagerready(cont)
   # ... do something before
   value = ... # create some value to work on later
-  result = cont(value)  # pass the value to the continuation function (think like ``yield``)
+  result = cont(value)  # pass the value to the continuation function (think like `yield`)
   # ... do something before exiting, e.g. cleaning up
   result # IMPORTANT: always return the result of the `cont` function
 end
@@ -31,6 +31,8 @@ end
 # ContextManager is just a wrapper
 # pass through function call syntax
 (c::ContextManager)(cont) = c.f(cont)
+Base.run(cont, c::ContextManager) = c(cont)
+Base.run(c::ContextManager) = c(identity)
 
 
 function Base.eltype(::Type{<:ContextManager{F}}) where F

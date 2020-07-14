@@ -22,10 +22,14 @@ Base.foreach(f, a::Identity) = begin f(a); nothing; end
 Base.map(f, a::Identity) = Identity(f(a.value))
 Base.Iterators.flatten(a::Identity) = convert(Identity, a.value)
 
-# Identity is covariate
 Base.convert(::Type{Identity{T}}, x::Identity) where {T} = Identity(Base.convert(T, x.value))
+# Identity is covariate
+# promote_rule only works on concrete types, more general checks Type{<:Const} may overwrite
+# unintentionally more specific promote_rule types
 promote_rule(::Type{Identity{T}}, ::Type{Identity{S}}) where {T, S<:T} = Identity{T}
+promote_rule(::Type{Identity{T}}, ::Type{Identity}) where T = Identity
+promote_rule(::Type{Identity}, ::Type{Identity}) = Identity
 
 # we need this for safety, if someone overwrites typejoin for Unions with Identiy
-Base.typejoin(::Type{Identity{T}}, ::Type{Identity{T}}) where T = Identity{T}
-Base.typejoin(::Type{<:Identity}, ::Type{<:Identity}) = Identity
+Base.promote_typejoin(::Type{Identity{T}}, ::Type{Identity{T}}) where T = Identity{T}
+Base.promote_typejoin(::Type{<:Identity}, ::Type{<:Identity}) = Identity

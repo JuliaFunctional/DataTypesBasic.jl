@@ -20,4 +20,10 @@ end
   include("ContextManager.jl")
 end
 
-# TODO test typejoin rules
+
+@testset "convert" begin
+  include("convert.jl")
+end
+@testset "promote_type" begin
+  include("promote_type.jl")
+end

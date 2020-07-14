@@ -24,16 +24,6 @@ For further discussion see https://discourse.julialang.org/t/is-this-a-bug-some-
 Base.:(==)(a::Some, b::Some) = a.value == b.value
 Base.hash(a::Some) = hash(a.value)
 
-# we need to overwrite convert, because in the case that no conversion is possible, we currently get the super uninformative error
-# ERROR: could not compute non-nothing type
-# Stacktrace:
-#  [1] nonnothingtype_checked(::Type) at ./some.jl:29
-#  [2] convert(::Type{Union{Nothing, Some{T}} where T}, ::Int64) at ./some.jl:34
-#  [3] top-level scope at none:0
-# importantly, we should only add clauses for Type{Option} and not Type{<:Option} to not interfere with existing code
-Base.convert(::Type{Option}, x::Option) = x
-# Option{T} seems to be already covered by normal Union, Some, Nothing conversions, no need to provide them
-
 function iftrue(func::Function, b::Bool)
   b ? Identity(func()) : nothing
 end
