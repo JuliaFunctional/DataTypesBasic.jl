@@ -1,12 +1,31 @@
-```@meta
-CurrentModule = DataTypesBasic
+# DataTypesBasic.jl
+
+This package defines julia implementations for the common types `Option` (aka `Maybe`), `Either` and `Try`, as well as one extra type `ContextManager` which mimics Python's `with`-ContextManager.
+
+
+## Installation
+
+```julia
+using Pkg
+pkg"registry add https://github.com/JuliaRegistries/General"  # central julia repository
+pkg"registry add https://github.com/schlichtanders/SchlichtandersJuliaRegistry.jl"  # custom repository
+pkg"add DataTypesBasic"
 ```
 
-# DataTypesBasic
+Use it like
+```julia
+using DataTypesBasic
+```
+
+
+## Manual Outline
+
+```@contents
+Pages = ["manual.md"]
+```
+
+## [Library Index](@id main-index)
 
 ```@index
-```
-
-```@autodocs
-Modules = [DataTypesBasic]
+Pages = ["library.md"]
 ```
