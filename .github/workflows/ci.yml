@@ -24,11 +24,6 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-      - run: |
-          julia --project=. -e '
-            using Pkg
-            pkg"registry add https://github.com/schlichtanders/SchlichtandersJuliaRegistry.jl"
-          '
       - uses: actions/cache@v1
         env:
           cache-name: cache-artifacts
@@ -45,6 +40,12 @@ jobs:
       - uses: codecov/codecov-action@v1
         with:
           file: lcov.info
+      - run: |
+          julia --project=docs -e '
+            using Pkg
+            pkg"registry add https://github.com/JuliaRegistries/General"
+            pkg"registry add https://github.com/schlichtanders/SchlichtandersJuliaRegistry.jl"
+          '
   docs:
     name: Documentation
     runs-on: ubuntu-latest
@@ -56,6 +57,7 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Pkg
+            pkg"registry add https://github.com/JuliaRegistries/General"
             pkg"registry add https://github.com/schlichtanders/SchlichtandersJuliaRegistry.jl"
           '
       - run: |
