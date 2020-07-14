@@ -24,6 +24,11 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
+      - run: |
+          julia --project=. -e '
+            using Pkg
+            pkg"registry add https://github.com/schlichtanders/SchlichtandersJuliaRegistry.jl"
+          '
       - uses: actions/cache@v1
         env:
           cache-name: cache-artifacts
@@ -51,8 +56,14 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Pkg
+            pkg"registry add https://github.com/schlichtanders/SchlichtandersJuliaRegistry.jl"
+          '
+      - run: |
+          julia --project=docs -e '
+            using Pkg
             Pkg.develop(PackageSpec(path=pwd()))
-            Pkg.instantiate()'
+            Pkg.instantiate()
+          '
       - run: julia --project=docs docs/make.jl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
