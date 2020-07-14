@@ -1,13 +1,16 @@
 # DataTypesBasic
 
-This package defines julia implementations for the common types ``Option`` (aka ``Maybe``), ``Either`` and ``Try``, as well as one extra type `ContextManager` which mimics behaviour realized in Python with python contextmanagers.
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://schlichtanders.github.io/DataTypesBasic.jl/stable)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://schlichtanders.github.io/DataTypesBasic.jl/dev)
+[![Build Status](https://github.com/schlichtanders/DataTypesBasic.jl/workflows/CI/badge.svg)](https://github.com/schlichtanders/DataTypesBasic.jl/actions)
+[![Coverage](https://codecov.io/gh/schlichtanders/DataTypesBasic.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/schlichtanders/DataTypesBasic.jl)
+
+This package defines julia implementations for the common types `Option` (aka `Maybe`), `Either` and `Try`, as well as one extra type `ContextManager` which mimics Python's `with`-ContextManager.
 
 Use it like
 ```julia
 using DataTypesBasic
-DataTypesBasic.@overwrite_Base
 ```
-The macro `@overwrite_Base` assigns ``Some`` to `DataTypesBasic.Some` (in order to have consistent naming [following Scala](https://www.scala-lang.org/api/current/scala/Option.html)).
 
 ## Installation
 
@@ -20,30 +23,18 @@ pkg"add DataTypesBasic"
 
 ## Option
 
-``Option{T}`` Type is like ``Union{T, Nothing}``, plus that you can dispatch on it more easily.
-
-It is literally defined like an abstract type with two instances ``None`` and ``Some``
-```julia
-abstract type Option{T} end
-struct None{T} <: Option{T} end
-struct Some{T} <: Option{T}
-  value::T
-end
-```
-as you can see, ``None{T}`` captures the information ``"no value"`` of Type `T`, and  ``Some{T}`` guarantees to have
-a value of Type `T`.
+`Option{T} = Union{Identity{T}, Nothing}`
 
 Use it like
 ```julia
 using DataTypesBasic
-DataTypesBasic.@overwrite_Base
 
-fo(a::Some{String}) = a.value * "!"
-fo(a::None{String}) = "fallback behaviour"
+fo(a::Identity{String}) = a.value * "!"
+fo(a::Nothing) = "fallback behaviour"
 
 fo(Option("hi"))  # "hi!"
-fo(Option{String}())  # "fallback behaviour"
-# f(Option{Int}())  # not implemented
+fo(Option(nothing))  # "fallback behaviour"
+fo(Option())  # "fallback behaviour"
 ```
 
 The real power of `Option` comes from generic functionalities which you can define on it. `DataTypesBasic` already defines the following:
@@ -53,10 +44,9 @@ consult the respective function definition for details.
 Here an example for such a higher level perspective
 ```julia
 using DataTypesBasic
-DataTypesBasic.@overwrite_Base
 
-flatten(a::Some) = a.value
-flatten(a::None) = a
+flatten(a::Identity) = a.value
+flatten(a::Nothing) = a
 
 function map2(f, a::Option{S}, b::Option{T}) where {S, T}  # this comes
   nested_option = map(a) do a′
@@ -69,14 +59,14 @@ end
 
 map2(Option("hi"), Option("there")) do a, b
   "$a $b"
-end  # Some{String}("hi there")
+end  # Identity("hi there")
 
 map2(Option(1), Option()) do a, b
   a + b
-end  # None{Any}()
+end  # nothing
 ```
 
-The package ``TypeClasses.jl`` (soon to come) implements a couple of such higher level concepts of immense use
+The package `TypeClasses.jl` (soon to come) implements a couple of such higher level concepts of immense use
 (like Functors, Applicatives and Monads).
 
 
@@ -94,6 +84,6 @@ Please see the tests `test/ContextManager.jl`.
 
 ## [TODO] Other
 
-For abstraction purposes, there is also ``Const`` and ``Identity`` defined.
+For abstraction purposes, there is also `Const` and `Identity` defined.
 
 Please see the tests `test/Const.jl` and `test/Identity.jl` respectively.
