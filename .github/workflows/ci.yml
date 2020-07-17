@@ -40,11 +40,6 @@ jobs:
       - uses: codecov/codecov-action@v1
         with:
           file: lcov.info
-      - run: |
-          julia --project=docs -e '
-            using Pkg
-            pkg"registry add https://github.com/JuliaRegistries/General"
-            pkg"registry add https://github.com/schlichtanders/SchlichtandersJuliaRegistry.jl"
           '
   docs:
     name: Documentation
@@ -54,12 +49,6 @@ jobs:
       - uses: julia-actions/setup-julia@v1
         with:
           version: '1'
-      - run: |
-          julia --project=docs -e '
-            using Pkg
-            pkg"registry add https://github.com/JuliaRegistries/General"
-            pkg"registry add https://github.com/schlichtanders/SchlichtandersJuliaRegistry.jl"
-          '
       - run: |
           julia --project=docs -e '
             using Pkg

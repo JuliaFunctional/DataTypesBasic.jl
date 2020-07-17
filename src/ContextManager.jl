@@ -36,7 +36,7 @@ Base.run(c::ContextManager) = c(identity)
 
 
 function Base.eltype(::Type{<:ContextManager{F}}) where F
-  Out(apply, F, typeof(identity))
+  Base.promote_op((f, arg) -> f(arg), F, typeof(identity))
 end
 Base.eltype(::Type{<:ContextManager}) = Any
 

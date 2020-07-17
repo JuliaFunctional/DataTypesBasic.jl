@@ -37,7 +37,6 @@ export Const, Identity,
   ContextManager, @ContextManager
 
 using Compat
-using IsDef
 
 # type definitions
 include("Nothing.jl")
