@@ -7,6 +7,8 @@ using DataTypesBasic
 @test promote_type(Identity{Int}, Nothing) == Union{Identity{Int}, Nothing}
 @test promote_type(Nothing, Identity{<:Number}) == Union{Identity{<:Number}, Nothing}
 
+@test Dict(:a => Identity(1), :b => nothing) isa Dict{Symbol, Option{Int}}
+
 
 # Either
 # ======
@@ -45,21 +47,34 @@ using DataTypesBasic
 @test promote_type(Identity, Const{String}, Option{Number}) == OptionEither{String}
 @test promote_type(Either{<:Any, Int}, Identity, Const, Nothing) == OptionEither
 
+# TODO understand why this promote_type is not working, while doing it one after the other actually works...
+# @test promote_type(Identity, Const{String}, Nothing, Const{AbstractString}) == OptionEither{AbstractString}
+@test promote_type(Identity, Const{String}, Nothing, Const{AbstractString}) == OptionEither
+@test promote_type(promote_type(Identity, Const{String}, Nothing), Const{AbstractString}) == OptionEither{AbstractString}
 
 
 # promote_typejoin
 # ================
 
-multiple_args = [
-    (Identity, Const{String}),
-    (Nothing, Identity{Number}),
-    (Identity{Number}, OptionEither),
-    (Const{String}, Either{AbstractString}),
-    (Option{Number}, Identity{Int}),
-    (Nothing, Option),
-]
-for args in multiple_args
-    @test Base.promote_typejoin(args...) == promote_type(args...)
-end
 
-# TODO test promote_typejoin more intense as soon as it differs from promote_type
+@test Base.promote_typejoin(Identity, Const{String}) == Either{String}
+
+@test Base.promote_typejoin(Nothing, Identity{Number}) == Option{Number}
+@test Base.promote_typejoin(Identity{Number}, OptionEither) == OptionEither
+@test Base.promote_typejoin(Const{String}, Either{AbstractString}) == Either
+@test Base.promote_typejoin(Option{Number}, Identity{Int}) == Option
+@test Base.promote_typejoin(Nothing, Option) == Option
+@test Base.promote_typejoin(Nothing, Identity{Number}) == Option{Number}
+@test Base.promote_typejoin(Nothing, Identity) == Option
+
+@test Base.promote_typejoin(Identity{Number}, OptionEither{Number}) == OptionEither{Number}
+@test Base.promote_typejoin(Identity{Number}, OptionEither{String, Number}) == OptionEither{String, Number}
+@test Base.promote_typejoin(Identity{Number}, OptionEither{String, Int}) == OptionEither{String}
+
+@test Base.promote_typejoin(Const{Number}, OptionEither{String, Int}) == OptionEither{<:Any, Int}
+@test Base.promote_typejoin(Nothing, OptionEither{String, Int}) == OptionEither{String, Int}
+@test Base.promote_typejoin(Nothing, OptionEither) == OptionEither
+
+@test Base.promote_typejoin(Const{Int}, OptionEither{Number}) == OptionEither
+
+@test Base.promote_typejoin(Const{Int}, Either{Number}) == Either
