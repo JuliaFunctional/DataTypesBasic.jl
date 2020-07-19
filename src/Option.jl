@@ -9,20 +9,6 @@ Option(a::T) where T = Identity{T}(a)
 Option{T}() where T = nothing
 Option() = nothing
 
-# we don't need any extra typejoin rules, as they are already provided by Base.promote_typejoin
-
-
-"""
-overwrite `Base.:(==)` and `Base.hash` for `Base.Some`
-
-as the default version is uninuitive and leads to surprising errors if you have the same intuition as me
-
-Unfortunately this may breaks existing Julia code, but the semantics of Some is more a container, then a `Ref`.
-For further discussion see https://discourse.julialang.org/t/is-this-a-bug-some-some/39541
-"""
-
-Base.:(==)(a::Some, b::Some) = a.value == b.value
-Base.hash(a::Some) = hash(a.value)
 
 function iftrue(func::Function, b::Bool)
   b ? Identity(func()) : nothing
