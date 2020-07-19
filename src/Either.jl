@@ -16,6 +16,26 @@ function either(left_false, comparison::Bool, right_true)
   comparison ? Identity(right_true) : Const(left_false)
 end
 
+"""
+    @either true ? "right" : Symbol("left")
+    @either if false
+      "right"
+    else
+      :left
+    end
+
+Simple macro to reuse ? operator and simple if-else for constructing Either.
+"""
+macro either(expr::Expr)
+  @assert expr.head == :if && length(expr.args) == 3 "@either macro only works on ? or simple if-else."
+  if isa(expr.args[3], Expr) && (expr.args[3].head == :elseif)
+    error("Found elseif, however can only deal with simple if-else.")
+  end
+  esc(quote
+    DataTypesBasic.either($(expr.args[3]), $(expr.args[1]), $(expr.args[2]))
+  end)
+end
+
 flip_left_right(x::Const) = Identity(x.value)
 flip_left_right(x::Identity) = Const(x.value)
 

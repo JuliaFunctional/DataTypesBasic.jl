@@ -31,7 +31,7 @@ module DataTypesBasic
 
 export Const, Identity,
   Option, issomething, iftrue, iffalse, getOption, # isnothing, Nothing, Some comes from Base
-  Either, either, isleft, isright, getleft, getright, getleftOption, getrightOption, flip_left_right,
+  Either, either, @either, isleft, isright, getleft, getright, getleftOption, getrightOption, flip_left_right,
   OptionEither,
   Try, Thrown, @Try, @TryCatch, issuccess, isexception, MultipleExceptions,
   ContextManager, @ContextManager
