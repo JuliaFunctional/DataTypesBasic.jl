@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] - 2020-07-19
 ### Added
+- CI via GitHubActions
+- Documentation via Documenter.jl and GitHubActions
+- Codecoverage via GitHubActions and Codecov
+- TagBot and CompatHelper GitHubActions
 - extensive `promote_rule` and `promote_typejoin` implementations have been added for Identity,
   Const, Option, Either, OptionEither.
 - `@either` macro with which you can construct `Either` using ? operator or if-else.
