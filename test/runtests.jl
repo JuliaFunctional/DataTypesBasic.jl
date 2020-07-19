@@ -1,6 +1,8 @@
 using Test
 using DataTypesBasic
 
+@test isempty(detect_ambiguities(DataTypesBasic))
+
 @testset "Const" begin
   include("Const.jl")
 end
