@@ -17,7 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `@either` macro with which you can construct `Either` using ? operator or if-else.
 
 ### Changed
-- Option and Either are now represented as `Union` of Identity, Nothing and Const respectively
+- Option is now represented as Union of Identity and Const{Nothing}
+- Either is now represented as `Union` of Identity and Const
+- Try is now represented as `Union` of Identity and Const{<:Exception}
 - flatten in general is now unified to use `convert` for interoperability between similar
   container types
 - flatten of ContextManager is again reverted back to not use `FlattenMe` anymore. Instead the

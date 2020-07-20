@@ -4,8 +4,8 @@ Manual
 This package defines julia implementations for the common types `Option` (aka `Maybe`), `Either` and `Try`, as well as
 one extra type `ContextManager` which mimics Python's `with`-ContextManager.
 
-Unlike typical implementations of `Option`, and `Either` which define them as new separate type-hierarchies, in
-`DataTypesBasic` both actually share a common part: `Identity`.
+Unlike typical implementations of `Option`, and `Either` which define them as new separate
+type-hierarchies, in `DataTypesBasic` both actually share a common parts: `Identity` and `Const`.
 
 
 Identity
@@ -32,19 +32,12 @@ Think of `Identity` as lifting a value into the world of containers. `DataTypesB
 an `Identity` container to a `Vector` or else. This will come in handy soon. For now it is important to understand
 that wrapping some value `42` into `Identity(42)` makes it interactable on a container-level.
 
-Nothing
--------
-
-`DataTypesBasic` makes heavy use of the builtin `Base.Nothing`. In the context here, `nothing` is interpreted as an
-empty container, something without any element. Or from another perspective: `nothing` works like a short-cycling abort.
-
 
 Const
 -----
 
-`Const` looks like `Identity`, but behaves like `Nothing`. Its name suggests that whatever is in it will stay
-**const**ant. It behaves like an empty container, and can also be seen as aborting a program. Compared to `Nothing`,
-the `Const` container not only aborts, but further returns some useful abort-info.
+`Const` looks like `Identity`, but behaves like an empty container. Its name suggests that whatever is in it will stay
+**const**ant. Alternatively, it can also be interpreted as aborting a program. Use `Const(nothing)` to represent an empty Container. `Const(...)` is in this sense an empty container with additional information.
 
 ```julia
 struct Identity{T}
@@ -73,9 +66,9 @@ julia> for i in Identity("hello")
 Option
 -------
 
-Option is a container which has either 1 value or 0. Having `Identity` and `Nothing` already at hand, it is defined as
+Option is a container which has either 1 value or 0. Having `Identity` and `Const{Nothing}` already at hand, it is defined as
 ```julia
-Option{T} = Union{Identity{T}, Nothing}
+Option{T} = Union{Identity{T}, Const{Nothing}}
 ```
 
 Use it like
@@ -83,7 +76,7 @@ Use it like
 using DataTypesBasic
 
 fo(a::Identity{String}) = a.value * "!"
-fo(a::Nothing) = "fallback behaviour"
+fo(a::Const{Nothing}) = "fallback behaviour"
 
 fo(Option("hi"))  # "hi!"
 fo(Option(nothing))  # "fallback behaviour"
@@ -101,7 +94,7 @@ Here an example for such a higher level perspective
 using DataTypesBasic
 
 flatten(a::Identity) = a.value
-flatten(a::Nothing) = a
+flatten(a::Const) = a
 
 # map a function over 2 Options, getting an option back
 function map2(f, a::Option{S}, b::Option{T}) where {S, T}
@@ -119,7 +112,7 @@ end  # Identity("hi there")
 
 map2(Option(1), Option()) do a, b
   a + b
-end  # nothing
+end  # Const(nothing)
 ```
 
 The package `TypeClasses.jl` (soon to come) implements a couple of such higher level concepts of immense use
@@ -180,7 +173,7 @@ For further details, don't hesitate to consult the source code `src/Either.jl` o
 Try
 ----
 
-`Try` is a special case of `Either`, where `Const` can only bear Exceptions.
+`Try` is another special case of `Either`, where `Const` can only bear Exceptions.
 ```julia
 Try{T} = Union{Const{<:Exception}, Identity{T}}
 ```
