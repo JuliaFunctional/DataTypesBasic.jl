@@ -5,25 +5,25 @@ using DataTypesBasic
 # =====
 
 @test promote_type(Const{Int}, Const{Number}) == Const{Number}
-@test promote_type(Const{Int}, Const) = Const
-@test promote_type(Const, Const) = Const
+@test promote_type(Const{Int}, Const) == Const
+@test promote_type(Const, Const) == Const
 
 @test Base.promote_typejoin(Const{Number}, Const{Number}) == Const{Number}
 @test Base.promote_typejoin(Const{Int}, Const{Number}) == Const
-@test Base.promote_typejoin(Const{Int}, Const) = Const
-@test Base.promote_typejoin(Const, Const) = Const
+@test Base.promote_typejoin(Const{Int}, Const) == Const
+@test Base.promote_typejoin(Const, Const) == Const
 
 # Identity
 # ========
 
 @test promote_type(Identity{Int}, Identity{Number}) == Identity{Number}
-@test promote_type(Identity{Int}, Identity) = Identity
-@test promote_type(Identity, Identity) = Identity
+@test promote_type(Identity{Int}, Identity) == Identity
+@test promote_type(Identity, Identity) == Identity
 
 @test Base.promote_typejoin(Identity{Number}, Identity{Number}) == Identity{Number}
 @test Base.promote_typejoin(Identity{Int}, Identity{Number}) == Identity
-@test Base.promote_typejoin(Identity{Int}, Identity) = Identity
-@test Base.promote_typejoin(Identity, Identity) = Identity
+@test Base.promote_typejoin(Identity{Int}, Identity) == Identity
+@test Base.promote_typejoin(Identity, Identity) == Identity
 
 
 # Option

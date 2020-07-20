@@ -27,9 +27,9 @@ Base.convert(::Type{Identity{T}}, x::Identity) where {T} = Identity(Base.convert
 # Identity is covariate
 # promote_rule only works on concrete types, more general checks Type{<:Const} may overwrite
 # unintentionally more specific promote_rule types
-promote_rule(::Type{Identity{T}}, ::Type{Identity{S}}) where {T, S<:T} = Identity{T}
-promote_rule(::Type{Identity{T}}, ::Type{Identity}) where T = Identity
-promote_rule(::Type{Identity}, ::Type{Identity}) = Identity
+Base.promote_rule(::Type{Identity{T}}, ::Type{Identity{S}}) where {T, S<:T} = Identity{T}
+Base.promote_rule(::Type{Identity{T}}, ::Type{Identity}) where T = Identity
+Base.promote_rule(::Type{Identity}, ::Type{Identity}) = Identity
 
 # we need this for safety, if someone overwrites typejoin for Unions with Identiy
 Base.promote_typejoin(::Type{Identity{T}}, ::Type{Identity{T}}) where T = Identity{T}
