@@ -13,28 +13,19 @@ Base.convert(::Type{<:Vector}, x::ContextManager) = [x(identity)]
 # Const
 # -----
 
-Base.convert(::Type{<:Const}, x::Nothing) = Const(nothing)
 function Base.convert(::Type{Const}, x::Vector)
   @assert !isempty(x) "can only convert empty Vector to Nothing, got $(x)"
   Const([])
 end
 
-# Nothing
-# -------
-
-function Base.convert(::Type{Nothing}, x::Vector)
-  @assert !isempty(x) "can only convert empty Vector to Nothing, got $(x)"
-  nothing
-end
-
 # Identity
 # --------
 
-# Nothing and Const are just passed through when asked to convert to identity
-# this is intended special behaviour in order for Identity + Nothing/Const to work together as Option/Either
-Base.convert(::Type{Identity}, x::Union{Nothing, Const}) = x
+# Const are just passed through when asked to convert to identity
+# this is intended special behaviour in order for Identity + Const to work together as Option/Either
+Base.convert(::Type{Identity}, x::Const) = x
 # ContextManager is executed
-Base.convert(::Type{<:Identity}, x::ContextManager) = Identity(x(identity))
+Base.convert(::Type{<:Identity}, x::ContextManager) = Identity(run(x))
 
 
 # ContextManager
@@ -42,9 +33,9 @@ Base.convert(::Type{<:Identity}, x::ContextManager) = Identity(x(identity))
 
 Base.convert(::Type{<:ContextManager}, x::Identity) = @ContextManager cont -> cont(x.value)
 
-# Note that we do not support convert from Nothing/Const to ContextManager.
+# Note that we do not support convert from Const to ContextManager.
 # ContextManager is similar to Identity a Container which always contains a single element,
-# however, unlike Identity, we cannot simply pass-through Nothing/Const and preserve the empty container by this trick.
+# however, unlike Identity, we cannot simply pass-through Const and preserve the empty container by this trick.
 # To map over ContextManager, you NEED to create a new ContextManager, if you don't want to run the contextmanager
 # immediately. Hence, also flatmap needs to create another ContextManager, i.e. single element container.
 
@@ -69,8 +60,8 @@ Base.convert(::Type{Option}, x::Option) = x
 
 Base.convert(::Type{Option{T}}, x::Identity) where T = Identity(Base.convert(T, x))
 Base.convert(::Type{Option{T}}, x::Identity{T}) where T = x  # nothing to convert
-Base.convert(::Type{Option{T}}, x::Nothing) where T = x  # nothing to convert
-Base.convert(::Type{Option}, x::Nothing) = x  # nothing to convert
+Base.convert(::Type{Option{T}}, x::Const{Nothing}) where T = x  # nothing to convert
+Base.convert(::Type{Option}, x::Const{Nothing}) = x  # nothing to convert
 Base.convert(::Type{Option}, x::Identity) = x  # nothing to convert
 
 
@@ -86,21 +77,3 @@ Base.convert(::Type{Either{<:Any, R}}, x::Identity) where {R} = Identity(Base.co
 Base.convert(::Type{Either{<:Any, R}}, x::Identity{R}) where {R} = x  # nothing to convert
 Base.convert(::Type{Either{L, <:Any}}, x::Const) where {L} = Const(Base.convert(L, x.value))
 Base.convert(::Type{Either{L, <:Any}}, x::Const{L}) where {L} = x  # nothing to convert
-
-
-# OptionEither
-# ------------
-
-Base.convert(::Type{OptionEither{L, R}}, x::Identity) where {L, R} = Identity(Base.convert(R, x.value))
-Base.convert(::Type{OptionEither{L, R}}, x::Identity{R}) where {L, R} = x  # nothing to convert
-Base.convert(::Type{OptionEither{L, R}}, x::Const) where {L, R} = Const(Base.convert(L, x.value))
-Base.convert(::Type{OptionEither{L, R}}, x::Const{L}) where {L, R} = x  # nothing to convert
-
-Base.convert(::Type{OptionEither{<:Any, R}}, x::Identity) where {R} = Identity(Base.convert(R, x.value))
-Base.convert(::Type{OptionEither{<:Any, R}}, x::Identity{R}) where {R} = x  # nothing to convert
-Base.convert(::Type{OptionEither{L, <:Any}}, x::Const) where {L} = Const(Base.convert(L, x.value))
-Base.convert(::Type{OptionEither{L, <:Any}}, x::Const{L}) where {L} = x  # nothing to convert
-
-Base.convert(::Type{OptionEither{L, R}}, x::Nothing) where {L, R} = x  # nothing to convert
-Base.convert(::Type{OptionEither}, x::Nothing) = x  # nothing to convert
-Base.convert(::Type{OptionEither}, x::Identity) = x  # nothing to convert

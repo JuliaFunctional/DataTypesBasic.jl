@@ -1,30 +1,34 @@
 # we don't use Some because it does not behave like a container, but more like `Ref`
 # for details/update see https://github.com/JuliaLang/julia/issues/35911
-const Option{T} = Union{Nothing, Identity{T}}
+const Option{T} = Union{Const{Nothing}, Identity{T}}
 
-Option{T}(a::Nothing) where T = nothing
+Option{T}(::Const{Nothing}) where T = Const(nothing)
+Option{T}(::Nothing) where T = Const(nothing)
 Option{T}(a::T) where T = Identity{T}(a)
-Option(a::Nothing) = nothing
+Option(::Const{Nothing}) = Const(nothing)
+Option(::Nothing) = Const(nothing)
 Option(a::T) where T = Identity{T}(a)
-Option{T}() where T = nothing
-Option() = nothing
+Option{T}() where T = Const(nothing)
+Option() = Const(nothing)
 
 
 function iftrue(func::Function, b::Bool)
-  b ? Identity(func()) : nothing
+  b ? Identity(func()) : Const(nothing)
 end
 function iftrue(b::Bool, t)
-  b ? Identity(t) : nothing
+  b ? Identity(t) : Const(nothing)
 end
 function iffalse(func::Function, b::Bool)
-  !b ? Identity(func()) : nothing
+  !b ? Identity(func()) : Const(nothing)
 end
 function iffalse(b::Bool, t)
-  !b ? Identity(t) : nothing
+  !b ? Identity(t) : Const(nothing)
 end
 
-issomething(m::Nothing) = false
-issomething(m::Identity) = true
+isoption(::Const{Nothing}) = true
+isoption(::Identity) = true
+isoption(other) = false
+
 
 Base.eltype(::Type{Option{T}}) where {T} = T
 Base.eltype(::Type{Option}) = Any

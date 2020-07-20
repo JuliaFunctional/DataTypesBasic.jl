@@ -1,3 +1,9 @@
+"""
+    Const("anything")
+
+DataType which behaves constant among `map`, `foreach` and the like. Just like an empty container,
+however with additional information about which kind of empty.
+"""
 struct Const{T}
   value::T
 end
@@ -9,9 +15,16 @@ function Base.show(io::IO, x::Const)
   print(io, "Const($(repr(x.value)))")
 end
 
-isconst(::Const) = true
-isconst(other) = false
+"""
+    isconst(Const(3)) -> true
+    isconst("anythingelse") -> false
 
+returns true only if given an instance of  [`DataTypesBasic.Const`](@ref)
+"""
+Base.isconst(::Const) = true
+Base.isconst(other) = false
+
+Base.length(::Const) = 0
 
 # const just does nothing, i.e. leaves everything constant
 Base.iterate(c::Const) = nothing

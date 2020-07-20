@@ -3,17 +3,17 @@ using DataTypesBasic
 
 @test isempty(detect_ambiguities(DataTypesBasic))
 
-@testset "Const" begin
-  include("Const.jl")
-end
 @testset "Identity" begin
   include("Identity.jl")
 end
-@testset "Either" begin
-  include("Either.jl")
+@testset "Const" begin
+  include("Const.jl")
 end
 @testset "Option" begin
   include("Option.jl")
+end
+@testset "Either" begin
+  include("Either.jl")
 end
 @testset "Try" begin
   include("Try.jl")

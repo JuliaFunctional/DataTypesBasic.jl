@@ -33,24 +33,21 @@ higher code-reuse and datatype-reuse.
 """
 module DataTypesBasic
 
-export Const, Identity,
-  Option, issomething, iftrue, iffalse, getOption, # isnothing, Nothing, Some comes from Base
-  Either, either, @either, isleft, isright, getleft, getright, getleftOption, getrightOption, flip_left_right,
-  OptionEither,
+export Identity, isidentity, Const,
+  Option, isoption, iftrue, iffalse, getOption, # isnothing, Nothing, Some comes from Base
+  Either, either, @either, iseither, isleft, isright, getleft, getright, getleftOption, getrightOption, flip_left_right,
   Try, Thrown, @Try, @TryCatch, issuccess, isexception, MultipleExceptions,
   ContextManager, @ContextManager
 
 using Compat
 
 # type definitions
-include("Nothing.jl")
-include("Const.jl")
 include("Identity.jl")
+include("Const.jl")
 include("Option.jl")
 include("Try.jl")
 include("Either.jl")
 include("ContextManager.jl")
-include("OptionEither.jl")
 
 # interoperability between types
 include("promote_type.jl")

@@ -1,39 +1,8 @@
-# promote_type/promote_typejoin already works for Identity and Nothing (aka Options)
-# ==========================================================================
+# promote_type/promote_typejoin should work with Identity and Const (aka Either, but also for Option)
 
 # promote_type
-# ------------
-# seamingly nothing todo, everything works out of the box
-# probably as `Nothing` is already super well supported for promote_type and promote_typejoin
+# ============
 
-
-# promote_typejoin
-# ----------------
-# This does not seem to work out of the box however, a bit surprisingly.
-# One reason seems to be that Identity is not a concrete type.
-
-# only the abstract one is missing in Base
-Base.promote_typejoin(::Type{Nothing}, ::Type{Identity}) = Option
-Base.promote_typejoin(::Type{Identity}, ::Type{Nothing}) = Option
-
-Base.promote_typejoin(::Type{Option{T1}}, ::Type{Identity{T2}}) where {T1, T2} = Option
-Base.promote_typejoin(::Type{Identity{T2}}, ::Type{Option{T1}}) where {T1, T2} = Option
-
-Base.promote_typejoin(::Type{Option{T}}, ::Type{Nothing}) where {T} = Option{T}
-Base.promote_typejoin(::Type{Nothing}, ::Type{Option{T}}) where {T} = Option{T}
-
-Base.promote_typejoin(::Type{Option}, ::Type{Nothing}) = Option
-Base.promote_typejoin(::Type{Nothing}, ::Type{Option}) = Option
-
-
-
-
-
-
-# promote_type/promote_typejoin should work with Identity and Const (aka Either)
-# ==========================================================================
-
-# promote_type ---------------------------------------------------------------------------------
 # promote_type only has to deal with concrete types, including Unions in our case
 
 # promote_type Const & Identity
@@ -106,7 +75,10 @@ Base.promote_rule(::Type{Either{<:Any, R1}}, ::Type{Either{<:Any, R2}}) where {R
 Base.promote_rule(::Type{Either}, ::Type{Either}) = Either
 
 
-# promote_typejoin ---------------------------------------------------------------
+
+# promote_typejoin
+# ================
+
 # promote_typejoin never converts types, but always returns the next abstract type in the hierarchy, including Unions
 # further, promote_typejoin(A, B) and promote_typejoin(B, A) need both to be defined (unlike promote_rule)
 
@@ -195,108 +167,3 @@ Base.promote_typejoin(::Type{Either{<:Any, R1}}, ::Type{Either{<:Any, R2}}) wher
 
 
 Base.promote_typejoin(::Type{Either}, ::Type{Either}) = Either
-
-
-
-
-
-# promote_type/promote_typejoin should work with all three Identity, Nothing and Const (aka OptionEither)
-# ==========================================================================
-
-# promote_type
-# ------------
-# nothing todo, as `Nothing` is already super well supported for promote_type and promote_typejoin
-
-
-# promote_typejoin
-# ----------------
-
-# we have to do something here
-
-# Nothing
-# - - - -
-
-Base.promote_typejoin(::Type{Nothing}, ::Type{OptionEither{L, R}}) where {L, R} = OptionEither{L, R}
-Base.promote_typejoin(::Type{OptionEither{L, R}}, ::Type{Nothing}) where {L, R} = OptionEither{L, R}
-
-Base.promote_typejoin(::Type{Nothing}, ::Type{OptionEither{L, <:Any}}) where {L} = OptionEither{L, <:Any}
-Base.promote_typejoin(::Type{OptionEither{L, <:Any}}, ::Type{Nothing}) where {L} = OptionEither{L, <:Any}
-
-Base.promote_typejoin(::Type{Nothing}, ::Type{OptionEither{<:Any, R}}) where {R} = OptionEither{<:Any, R}
-Base.promote_typejoin(::Type{OptionEither{<:Any, R}}, ::Type{Nothing}) where {R} = OptionEither{<:Any, R}
-
-Base.promote_typejoin(::Type{Nothing}, ::Type{OptionEither}) = OptionEither
-Base.promote_typejoin(::Type{OptionEither}, ::Type{Nothing}) = OptionEither
-
-
-# Const
-# - - -
-
-Base.promote_typejoin(::Type{Const{L}}, ::Type{OptionEither{L, R}}) where {L, R} = OptionEither{L, R}
-Base.promote_typejoin(::Type{OptionEither{L, R}}, ::Type{Const{L}}) where {L, R} = OptionEither{L, R}
-
-Base.promote_typejoin(::Type{Const{L1}}, ::Type{OptionEither{L2, R}}) where {L1, L2, R} = OptionEither{<:Any, R}
-Base.promote_typejoin(::Type{OptionEither{L2, R}}, ::Type{Const{L1}}) where {L1, L2, R} = OptionEither{<:Any, R}
-
-Base.promote_typejoin(::Type{Const{L}}, ::Type{OptionEither{<:Any, R}}) where {L, R} = OptionEither{<:Any, R}
-Base.promote_typejoin(::Type{OptionEither{<:Any, R}}, ::Type{Const{L}}) where {L, R} = OptionEither{<:Any, R}
-
-Base.promote_typejoin(::Type{Const{L}}, ::Type{OptionEither{L, <:Any}}) where {L} = OptionEither{L, <:Any}
-Base.promote_typejoin(::Type{OptionEither{L, <:Any}}, ::Type{Const{L}}) where {L, R} = OptionEither{L, <:Any}
-
-Base.promote_typejoin(::Type{Const{L1}}, ::Type{OptionEither{L2, <:Any}}) where {L1, L2} = OptionEither
-Base.promote_typejoin(::Type{OptionEither{L2, <:Any}}, ::Type{Const{L1}}) where {L1, L2} = OptionEither
-
-Base.promote_typejoin(::Type{Const{L}}, ::Type{OptionEither}) where {L} = OptionEither
-Base.promote_typejoin(::Type{OptionEither}, ::Type{Const{L}}) where {L} = OptionEither
-
-
-
-Base.promote_typejoin(::Type{Const}, ::Type{OptionEither{L, R}}) where {L, R} = OptionEither{<:Any, R}
-Base.promote_typejoin(::Type{OptionEither{L, R}}, ::Type{Const}) where {L, R} = OptionEither{<:Any, R}
-
-Base.promote_typejoin(::Type{Const}, ::Type{OptionEither{L, <:Any}}) where {L} = OptionEither
-Base.promote_typejoin(::Type{OptionEither{L, <:Any}}, ::Type{Const}) where {L} = OptionEither
-
-Base.promote_typejoin(::Type{Const}, ::Type{OptionEither{<:Any, R}}) where {R} = OptionEither{<:Any, R}
-Base.promote_typejoin(::Type{OptionEither{<:Any, R}}, ::Type{Const}) where {R} = OptionEither{<:Any, R}
-
-Base.promote_typejoin(::Type{Const}, ::Type{OptionEither}) = OptionEither
-Base.promote_typejoin(::Type{OptionEither}, ::Type{Const}) = OptionEither
-
-
-# Identity
-# - - - - -
-
-
-Base.promote_typejoin(::Type{Identity{R}}, ::Type{OptionEither{L, R}}) where {L, R} = OptionEither{L, R}
-Base.promote_typejoin(::Type{OptionEither{L, R}}, ::Type{Identity{R}}) where {L, R} = OptionEither{L, R}
-
-Base.promote_typejoin(::Type{Identity{R1}}, ::Type{OptionEither{L, R2}}) where {L, R1, R2} = OptionEither{L, <:Any}
-Base.promote_typejoin(::Type{OptionEither{L, R2}}, ::Type{Identity{R1}}) where {L, R1, R2} = OptionEither{L, <:Any}
-
-Base.promote_typejoin(::Type{Identity{R}}, ::Type{OptionEither{L, <:Any}}) where {L, R} = OptionEither{L, <:Any}
-Base.promote_typejoin(::Type{OptionEither{L, <:Any}}, ::Type{Identity{R}}) where {L, R} = OptionEither{L, <:Any}
-
-Base.promote_typejoin(::Type{Identity{R}}, ::Type{OptionEither{<:Any, R}}) where {R} = OptionEither{<:Any, R}
-Base.promote_typejoin(::Type{OptionEither{<:Any, R}}, ::Type{Identity{R}}) where {L, R} = OptionEither{<:Any, R}
-
-Base.promote_typejoin(::Type{Identity{R1}}, ::Type{OptionEither{<:Any, R2}}) where {R1, R2} = OptionEither
-Base.promote_typejoin(::Type{OptionEither{<:Any, R2}}, ::Type{Identity{R1}}) where {R1, R2} = OptionEither
-
-Base.promote_typejoin(::Type{Identity{R}}, ::Type{OptionEither}) where {R} = OptionEither
-Base.promote_typejoin(::Type{OptionEither}, ::Type{Identity{R}}) where {R} = OptionEither
-
-
-
-Base.promote_typejoin(::Type{Identity}, ::Type{OptionEither{L, R}}) where {L, R} = OptionEither{L, <:Any}
-Base.promote_typejoin(::Type{OptionEither{L, R}}, ::Type{Identity}) where {L, R} = OptionEither{L, <:Any}
-
-Base.promote_typejoin(::Type{Identity}, ::Type{OptionEither{<:Any, R}}) where {R} = OptionEither
-Base.promote_typejoin(::Type{OptionEither{<:Any, R}}, ::Type{Identity}) where {R} = OptionEither
-
-Base.promote_typejoin(::Type{Identity}, ::Type{OptionEither{L, <:Any}}) where {L} = OptionEither{L, <:Any}
-Base.promote_typejoin(::Type{OptionEither{L, <:Any}}, ::Type{Identity}) where {L} = OptionEither{L, <:Any}
-
-Base.promote_typejoin(::Type{Identity}, ::Type{OptionEither}) = OptionEither
-Base.promote_typejoin(::Type{OptionEither}, ::Type{Identity}) = OptionEither

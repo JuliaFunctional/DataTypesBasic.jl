@@ -39,11 +39,15 @@ end
 flip_left_right(x::Const) = Identity(x.value)
 flip_left_right(x::Identity) = Const(x.value)
 
-isleft(e::Const) = true
-isleft(e::Identity) = false
+iseither(::Const) = true
+iseither(::Identity) = true
+iseither(other) = false
 
-isright(e::Const) = false
-isright(e::Identity) = true
+isleft(::Const) = true
+isleft(::Identity) = false
+
+isright(::Const) = false
+isright(::Identity) = true
 
 getleft(e::Const) = e.value
 # getleft(e::Identity) = nothing  # throw an error if getleft is called on Identity
@@ -51,8 +55,8 @@ getleft(e::Const) = e.value
 # getright(e::Const) = nothing  # throw an error if getright is called on Const
 getright(e::Identity) = e.value
 
-getleftOption(e::Const{L}) where {L} = Identity{L}(e.value)
-getleftOption(e::Identity) = nothing
+getleftOption(e::Const) = Option(e.value)
+getleftOption(e::Identity) = Option()
 
-getrightOption(e::Const) = nothing
-getrightOption(e::Identity{R}) where {R} = e
+getrightOption(e::Const) = Option()
+getrightOption(e::Identity) = e
