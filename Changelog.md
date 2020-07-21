@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - flatten in general is now unified to use `convert` for interoperability between similar
   container types
 - flatten of ContextManager is again reverted back to not use `FlattenMe` anymore. Instead the
-  inner result value is explicitly converted to `ContextManager`, following the general principal
+  inner result value is explicitly converted to `ContextManager`, following the general principle
   now.
 
 ### Fixed

@@ -29,8 +29,8 @@ using DataTypesBasic
 # Option
 # ======
 
-@test promote_type(Identity{Int}, Nothing) == Union{Identity{Int}, Nothing}
-@test promote_type(Nothing, Identity{<:Number}) == Union{Identity{<:Number}, Nothing}
+@test promote_type(Identity{Int}, Const{Nothing}) == Union{Identity{Int}, Const{Nothing}}
+@test promote_type(Const{Nothing}, Identity{<:Number}) == Union{Identity{<:Number}, Const{Nothing}}
 
 @test Dict(:a => Identity(1), :b => Const(nothing)) isa Dict{Symbol, Option{Int}}
 
@@ -60,7 +60,7 @@ using DataTypesBasic
 # OptionEither
 # ============
 
-@test promote_type(Identity{Number}, Const{Int}, Nothing) == Union{Nothing, Const{Int64}, Identity{Number}}
+@test promote_type(Identity{Number}, Const{Int}, Const{Nothing}) == Union{Const, Identity{Number}}
 
 @test promote_type(Either{Number}, Const{Nothing}) == Either
 @test promote_type(Either{Number, AbstractString}, Const{Nothing}) == Either{<:Any, AbstractString}
