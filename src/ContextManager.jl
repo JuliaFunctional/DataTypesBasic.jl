@@ -52,7 +52,7 @@ end
 
 
 
-"""
+@doc raw"""
     @ContextManager function(cont); ...; end
 
 There is a simple `@ContextManager` for writing less parentheses
