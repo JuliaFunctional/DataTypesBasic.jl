@@ -26,6 +26,8 @@ Base.isconst(other) = false
 
 Base.length(::Const) = 0
 
+# as the length of Const is 0, we intentionally do not support `Base.get`
+
 # const just does nothing, i.e. leaves everything constant
 Base.iterate(c::Const) = nothing
 Base.foreach(f, c::Const) = nothing

@@ -1,3 +1,12 @@
+"""
+    Identity(:anything)
+
+Identity is a simple wrapper, which works as a single-element container.
+
+It can be used as the trivial Monad, and as such can be helpful in monadic
+abstractions. For those who don't know about Monads, just think of it like
+container-abstractions.
+"""
 struct Identity{T}
   value::T
 end
@@ -8,6 +17,12 @@ function Base.show(io::IO, x::Identity)
   print(io, "Identity($(repr(x.value)))")
 end
 
+"""
+    isidentity(Identity(3)) -> true
+    isidentity("anythingelse") -> false
+
+returns true only if given an instance of  [Identity](@ref)
+"""
 isidentity(::Identity) = true
 isidentity(other) = false
 

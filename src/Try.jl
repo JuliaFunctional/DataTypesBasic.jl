@@ -1,3 +1,18 @@
+
+"""
+    Try{T} = Union{Const{<:Exception}, Identity{T}}
+    @Try(error("something happend")) isa Const(<:Thrown{ErrorException})
+    @Try(:successfull) == Identity(:successfull)
+
+A specific case of [`Either`](@ref), where the Failure is always an Exception.
+This can be used as an alternative to using try-catch syntax and allows for very flexible
+error handling, as the error is now captured in a proper defined type.
+Often it is really handy to treat errors like other values (without the need of extra try-catch syntax which only
+applies to exceptions).
+
+We reuse [`Identity`](@ref) for representing the single-element-container and `Const(<:Exception)` as the Exception
+thrown.
+"""
 const Try{T} = Union{Const{<:Exception}, Identity{T}}
 Try(t) = Identity(t)
 Try(t::Exception) = Const(t)
@@ -7,6 +22,8 @@ Try{T}(other) where T = Const(other)
 
 
 """
+    Thrown(exception::Exception, stacktrace::Vector)
+
 Thrown is like Exception, however can also cary stacktraces
 """
 struct Thrown{E} <: Exception
@@ -36,7 +53,10 @@ function Base.showerror(io::IO, ::MIME"text/plain", exc::Thrown)
 end
 
 """
-Combine Multiple Exceptions
+    MultipleExceptions(exception1, exception2, ...)
+    MultipleExceptions(tuple_or_vector_of_exceptions)
+
+Little helper type which combines several Exceptions into one new Exception.
 """
 struct MultipleExceptions{Es<:Tuple} <: Exception
   exceptions::Es
@@ -83,6 +103,23 @@ promote_rule(::Type{Try{T}}, ::Type{Try{S}}) where {T, S<:T} = Try{T}
 
 # we use a macro instead of dispatching on Try(f::Function) as this interferes e.g. with mapn
 # (in mapn anonymous functions are passed through, which should not get executed automatically)
+"""
+    @Try begin
+      your_code
+    end
+
+Macro which directly captures an Excpetion into a proper `Try`representation.
+
+It translates to
+```julia
+try
+  r = your_code
+  Identity(r)
+catch exc
+  Const(Thrown(exc, Base.catch_stack()))
+end
+```
+"""
 macro Try(expr)
   quote
     try
@@ -94,7 +131,28 @@ macro Try(expr)
   end
 end
 
-# version which supports catching only specific errors
+"""
+    @TryCatch YourException begin
+      your_code
+    end
+
+A version of [`@Try`](@ref) which catches only specific errors.
+Every other orrer will be `rethrown`.
+
+It translates to
+```julia
+try
+  r = your_code
+  Identity(r)
+catch exc
+  if exc isa YourException
+    Const(Thrown(exc, Base.catch_stack()))
+  else
+    rethrow()
+  end
+end
+```
+"""
 macro TryCatch(exception, expr)
   quote
     try
@@ -110,9 +168,35 @@ macro TryCatch(exception, expr)
   end
 end
 
+
+"""
+    isoption(::Const{Nothing}) = true
+    isoption(::Identity) = true
+    isoption(other) = false
+
+check whether something is a [`Try`](@ref)
+"""
+istry(::Identity) = true
+istry(::Const{<:Exception}) = true
+istry(other) = false
+
+"""
+    issuccess(::Identity) = true
+    issuccess(::Const{<:Exception}) = false
+
+Similar to [`isright`](@ref), but only defined for `Const{<:Exception}`. Will
+throw MethodError when applied on other `Const`.
+"""
 issuccess(::Identity) = true
 issuccess(::Const{<:Exception}) = false
 
+"""
+    isexception(::Identity) = false
+    isexception(::Const{<:Exception}) = true
+
+Similar to [`isleft`](@ref), but only defined for `Const{<:Exception}`. Will
+throw MethodError when applied on other `Const`.
+"""
 isexception(::Identity) = false
 isexception(::Const{<:Exception}) = true
 

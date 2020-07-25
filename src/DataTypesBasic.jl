@@ -34,9 +34,9 @@ higher code-reuse and datatype-reuse.
 module DataTypesBasic
 
 export Identity, isidentity, Const,
-  Option, isoption, iftrue, iffalse, getOption, # isnothing, Nothing, Some comes from Base
-  Either, either, @either, iseither, isleft, isright, getleft, getright, getleftOption, getrightOption, flip_left_right,
-  Try, Thrown, @Try, @TryCatch, issuccess, isexception, MultipleExceptions,
+  Option, isoption, issome, isnone, iftrue, iffalse, getOption,
+  Either, either, @either, iseither, isleft, isright, getleft, getright, getOption, getleftOption, getrightOption, flip_left_right,
+  Try, @Try, @TryCatch, istry, issuccess, isexception, Thrown, MultipleExceptions,
   ContextManager, @ContextManager
 
 using Compat
