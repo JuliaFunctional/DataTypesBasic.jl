@@ -26,6 +26,10 @@ Pages = ["manual.md"]
 
 ## [Library Index](@id main-index)
 
+```@contents
+Pages = ["library.md"]
+```
+
 ```@index
 Pages = ["library.md"]
 ```
