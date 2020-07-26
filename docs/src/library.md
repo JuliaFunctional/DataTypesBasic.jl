@@ -64,5 +64,4 @@ getOption
 ```@docs
 ContextManager
 @ContextManager
-Base.run(::ContextManager)
 ```
