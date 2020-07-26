@@ -153,17 +153,32 @@ using DataTypesBasic
 # ---------------
 
 @test promote_type(Either{String, Integer}, Either{String, Integer}) == Either{String, Integer}
-@test promote_type(Either{AbstractString, Integer}, Either{String, Number}) == Either{AbstractString, Number}
+@test promote_type(Either{Integer, AbstractString}, Either{Integer, String}) == Either{Integer, AbstractString}
 @test promote_type(Either{Integer, AbstractString}, Either{Number, String}) == Either{Number, AbstractString}
+@test promote_type(Either{AbstractString, Integer}, Either{String, Integer}) == Either{AbstractString, Integer}
+@test promote_type(Either{AbstractString, Integer}, Either{String, Number}) == Either{AbstractString, Number}
+@test promote_type(Either{Number, String}, Either{Integer, AbstractString}) == Either{Number, AbstractString}
 
+@test promote_type(Either{Integer, AbstractString}, Either{Integer, Bool}) == Either{Integer, <:Any}
+@test promote_type(Either{Integer, AbstractString}, Either{Number, Bool}) == Either{Number, <:Any}
+@test promote_type(Either{Integer, String}, Either{String, String}) == Either{<:Any, String}
+@test promote_type(Either{Integer, AbstractString}, Either{String, String}) == Either{<:Any, AbstractString}
+
+@test promote_type(Either{<:Any, Integer}, Either{<:Any, Integer}) == Either{<:Any, Integer}
 @test promote_type(Either{<:Any, Integer}, Either{<:Any, Number}) == Either{<:Any, Number}
+@test promote_type(Either{String, <:Any}, Either{String, <:Any}) == Either{String, <:Any}
 @test promote_type(Either{String, <:Any}, Either{AbstractString, <:Any}) == Either{AbstractString, <:Any}
 @test promote_type(Either, Either) == Either
 
 @test Base.promote_typejoin(Either{Int, String}, Either{Int, String}) == Either{Int, String}
+
 @test Base.promote_typejoin(Either{Int, String}, Either{Number, String}) == Either{<:Any, String}
 @test Base.promote_typejoin(Either{Number, String}, Either{Int, String}) == Either{<:Any, String}
 @test Base.promote_typejoin(Either{Number, String}, Either{Int, AbstractString}) == Either
+
+@test Base.promote_typejoin(Either{String, Int}, Either{String, Number}) == Either{String, <:Any}
+@test Base.promote_typejoin(Either{String, Number}, Either{String, Int}) == Either{String, <:Any}
+@test Base.promote_typejoin(Either{String, Number}, Either{AbstractString, Int}) == Either
 
 @test Base.promote_typejoin(Either{Int, <:Any}, Either{Int, <:Any}) == Either{Int, <:Any}
 @test Base.promote_typejoin(Either{Int, <:Any}, Either{Number, <:Any}) == Either

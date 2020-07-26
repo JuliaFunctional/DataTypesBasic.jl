@@ -59,36 +59,51 @@ Base.promote_rule(::Type{Identity}, ::Type{Either}) = Either
 
 # As a workaround, we overload `promote_type` to deal with our symmetric case
 function Base.promote_type(::Type{Either{L1, R1}}, ::Type{Either{L2, R2}}) where {L1, R1, L2, R2}
-    Base.@_inline_meta
     T = Either{L1, R1}
     S = Either{L2, R2}
-    # we use typeintersect, as we get an Either for the non-fitting site,
-    # thanks to Base.promote_rule(::Type{Either{L1, R1}}, ::Type{Either{L2, R2}}) where {L1, R1, L2, R2} = Either
-    typeintersect(promote_rule(T, S), promote_rule(S, T))
+    either_promote_type_fix(T, S)
 end
 
 function Base.promote_type(::Type{Either{<:Any, R1}}, ::Type{Either{<:Any, R2}}) where {R1, R2}
-    Base.@_inline_meta
     T = Either{<:Any, R1}
     S = Either{<:Any, R2}
-    # we use typeintersect, as we get an Either for the non-fitting site,
-    # thanks to Base.promote_rule(::Type{Either{<:Any, R1}}, ::Type{Either{<:Any, R2}}) where {R1, R2} = Either
-    typeintersect(promote_rule(T, S), promote_rule(S, T))
+    either_promote_type_fix(T, S)
 end
 
 function Base.promote_type(::Type{Either{L1, <:Any}}, ::Type{Either{L2, <:Any}}) where {L1, L2}
-    Base.@_inline_meta
     T = Either{L1, <:Any}
     S = Either{L2, <:Any}
-    # we use typeintersect, as we get an Either for the non-fitting site,
-    # thanks to Base.promote_rule(::Type{Either{L1, <:Any}}, ::Type{Either{L2, <:Any}}) where {L1, L2} = Either
-    typeintersect(promote_rule(T, S), promote_rule(S, T))
+    either_promote_type_fix(T, S)
+end
+
+function either_promote_type_fix(T, S)
+    # In addition we need to check for MethodAmbiguities, as we cannot resolve them on one side, we just ignore them
+    a = @TryCatch MethodError promote_rule(T, S)
+    b = @TryCatch MethodError promote_rule(S, T)
+
+    if isexception(a) && isexception(b)
+        error("Could not `promote_type{T=$T, S=$S}`, as both `promote_rule(T, S)` and `promote_rule(S, T)` result in
+               MethodErrors: $a, $b.")
+    elseif issuccess(a) && issuccess(b)
+        # We use typeintersect, as we get an Either for the non-fitting site,
+        # thanks to
+        # * Base.promote_rule(::Type{Either{L1, R1}}, ::Type{Either{L2, R2}}) where {L1, R1, L2, R2} = Either
+        # * Base.promote_rule(::Type{Either{<:Any, R1}}, ::Type{Either{<:Any, R2}}) where {R1, R2} = Either
+        # * Base.promote_rule(::Type{Either{L1, <:Any}}, ::Type{Either{L2, <:Any}}) where {L1, L2} = Either
+        typeintersect(a[], b[])
+    elseif issuccess(a)
+        a[]
+    else
+        b[]
+    end
 end
 
 # we need to be cautious here, as we cannot dispatch on Type{<:Either{<:Any, R}} or similar, because R might not be defined
 Base.promote_rule(::Type{Either{L, R}}, ::Type{Either{L, R}}) where {L, R} = Either{L, R}
 Base.promote_rule(::Type{Either{L1, R}}, ::Type{Either{L2, R}}) where {L1, R, L2 <: L1} = Either{L1, R}
 Base.promote_rule(::Type{Either{L, R1}}, ::Type{Either{L, R2}}) where {L, R1, R2 <: R1} = Either{L, R1}
+Base.promote_rule(::Type{Either{L1, R1}}, ::Type{Either{L2, R2}}) where {L1, R1, L2 <: L1, R2} = Either{L1, <:Any}
+Base.promote_rule(::Type{Either{L2, R1}}, ::Type{Either{L1, R2}}) where {L1, R1, L2, R2 <: R1} = Either{<:Any, R1}
 Base.promote_rule(::Type{Either{L1, R1}}, ::Type{Either{L2, R2}}) where {L1, R1, L2 <: L1, R2 <: R1} = Either{L1, R1}
 Base.promote_rule(::Type{Either{L2, R1}}, ::Type{Either{L1, R2}}) where {L1, R1, L2 <: L1, R2 <: R1} = Either{L1, R1}
 
