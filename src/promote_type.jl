@@ -81,7 +81,7 @@ function either_promote_type_fix(T, S)
     a = @TryCatch MethodError promote_rule(T, S)
     b = @TryCatch MethodError promote_rule(S, T)
 
-    if isexception(a) && isexception(b)
+    if isfailure(a) && isfailure(b)
         error("Could not `promote_type{T=$T, S=$S}`, as both `promote_rule(T, S)` and `promote_rule(S, T)` result in
                MethodErrors: $a, $b.")
     elseif issuccess(a) && issuccess(b)

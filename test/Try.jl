@@ -16,9 +16,9 @@ using Test
 @test !issuccess(@Try error("hi"))
 @test_throws MethodError issuccess(Const("other"))
 
-@test isexception(@Try error("hi"))
-@test !isexception(@Try 5)
-@test_throws MethodError isexception(Const("other"))
+@test isfailure(@Try error("hi"))
+@test !isfailure(@Try 5)
+@test_throws MethodError isfailure(Const("other"))
 
 @test Thrown(ErrorException("one"), []) == Thrown(ErrorException("one"), [])
 @test repr(Thrown(ErrorException("some"), [])) == """Thrown(ErrorException("some"))"""

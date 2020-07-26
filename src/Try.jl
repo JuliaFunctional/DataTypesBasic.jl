@@ -184,14 +184,14 @@ issuccess(::Identity) = true
 issuccess(::Const{<:Exception}) = false
 
 """
-    isexception(::Identity) = false
-    isexception(::Const{<:Exception}) = true
+    isfailure(::Identity) = false
+    isfailure(::Const{<:Exception}) = true
 
 Similar to [`isleft`](@ref), but only defined for `Const{<:Exception}`. Will
 throw MethodError when applied on other `Const`.
 """
-isexception(::Identity) = false
-isexception(::Const{<:Exception}) = true
+isfailure(::Identity) = false
+isfailure(::Const{<:Exception}) = true
 
 Base.eltype(::Type{Try{T}}) where T = T
 Base.eltype(::Type{Try}) = Any

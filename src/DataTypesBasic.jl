@@ -36,7 +36,7 @@ module DataTypesBasic
 export Identity, isidentity, Const,
   Option, isoption, issome, isnone, iftrue, iffalse, getOption,
   Either, either, @either, iseither, isleft, isright, getleft, getright, getOption, getleftOption, getrightOption, flip_left_right,
-  Try, @Try, @TryCatch, istry, issuccess, isexception, Thrown, MultipleExceptions,
+  Try, @Try, @TryCatch, istry, issuccess, isfailure, Thrown, MultipleExceptions,
   ContextManager, @ContextManager
 
 using Compat
