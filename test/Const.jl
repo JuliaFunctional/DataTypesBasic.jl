@@ -12,9 +12,21 @@ end == Const(3)
 @test repr(Const(4)) == "Const(4)"
 
 @test collect(Const(4)) == []
+@test length(Const(:hi)) == 0
+
+@test @capture_out(for i in Const(true)
+  println("i = $i")
+end) == ""
+@test @capture_out(foreach(println, Const(5))) == ""
 
 @test eltype(Const(nothing)) == Any
 
 @test Iterators.flatten(Const(5)) == Const(5)
 
-@test @capture_out(foreach(println, Const(5))) == ""
+@test convert(Const{Float32}, Const(1)) == Const{Float32}(Float32(1))
+@test convert(Const{Number}, Const(1)) == Const{Number}(1)
+
+@test promote_type(Const{Int}, Const{Number}) == Const{Number}
+@test promote_type(Const{Int}, Const{String}) == Const
+@test promote_type(Const{Int}, Const) == Const
+@test promote_type(Const, Const) == Const
