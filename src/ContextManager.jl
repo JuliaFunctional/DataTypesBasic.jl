@@ -85,7 +85,7 @@ end
 Base.eltype(::Type{<:ContextManager}) = Any
 
 function Base.foreach(f, c::ContextManager)
-  Base.map(f, c)(x -> x)
+  c(f)
   nothing
 end
 
