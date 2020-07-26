@@ -50,6 +50,41 @@ Base.promote_rule(::Type{Identity}, ::Type{Either}) = Either
 # promote_type Either & Either
 # -----------------------------
 
+# It turns out for this symmetric case we need to define both versions of promote_rule, including the flipped one
+# This is needed, because `promote_type` assumes promote_rule to fallback to the general fallback returning Union{}
+# for its feature "you only need to define one" to work out correctly.
+
+# It turns out further, that there is a major bug in Julia, not allowing for these kinds of dispatch as of now
+# see https://github.com/JuliaLang/julia/issues/36804 the issue and possible future updates
+
+# As a workaround, we overload `promote_type` to deal with our symmetric case
+function Base.promote_type(::Type{Either{L1, R1}}, ::Type{Either{L2, R2}}) where {L1, R1, L2, R2}
+    Base.@_inline_meta
+    T = Either{L1, R1}
+    S = Either{L2, R2}
+    # we use typeintersect, as we get an Either for the non-fitting site,
+    # thanks to Base.promote_rule(::Type{Either{L1, R1}}, ::Type{Either{L2, R2}}) where {L1, R1, L2, R2} = Either
+    typeintersect(promote_rule(T, S), promote_rule(S, T))
+end
+
+function Base.promote_type(::Type{Either{<:Any, R1}}, ::Type{Either{<:Any, R2}}) where {R1, R2}
+    Base.@_inline_meta
+    T = Either{<:Any, R1}
+    S = Either{<:Any, R2}
+    # we use typeintersect, as we get an Either for the non-fitting site,
+    # thanks to Base.promote_rule(::Type{Either{<:Any, R1}}, ::Type{Either{<:Any, R2}}) where {R1, R2} = Either
+    typeintersect(promote_rule(T, S), promote_rule(S, T))
+end
+
+function Base.promote_type(::Type{Either{L1, <:Any}}, ::Type{Either{L2, <:Any}}) where {L1, L2}
+    Base.@_inline_meta
+    T = Either{L1, <:Any}
+    S = Either{L2, <:Any}
+    # we use typeintersect, as we get an Either for the non-fitting site,
+    # thanks to Base.promote_rule(::Type{Either{L1, <:Any}}, ::Type{Either{L2, <:Any}}) where {L1, L2} = Either
+    typeintersect(promote_rule(T, S), promote_rule(S, T))
+end
+
 # we need to be cautious here, as we cannot dispatch on Type{<:Either{<:Any, R}} or similar, because R might not be defined
 Base.promote_rule(::Type{Either{L, R}}, ::Type{Either{L, R}}) where {L, R} = Either{L, R}
 Base.promote_rule(::Type{Either{L1, R}}, ::Type{Either{L2, R}}) where {L1, R, L2 <: L1} = Either{L1, R}
@@ -73,7 +108,6 @@ Base.promote_rule(::Type{Either{<:Any, R1}}, ::Type{Either{<:Any, R2}}) where {R
 # with more concrete implementations of promote_rule
 # promote_type seem to assume, that you really only define promote_rule for concrete types
 Base.promote_rule(::Type{Either}, ::Type{Either}) = Either
-
 
 
 # promote_typejoin
