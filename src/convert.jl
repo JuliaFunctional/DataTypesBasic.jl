@@ -14,8 +14,8 @@ Base.convert(::Type{<:Vector}, x::ContextManager) = [x(identity)]
 # -----
 
 function Base.convert(::Type{Const}, x::Vector)
-  @assert !isempty(x) "can only convert empty Vector to Nothing, got $(x)"
-  Const([])
+  @assert isempty(x) "can only convert empty Vector to Nothing, got $(x)"
+  Const(nothing)  # == Option()
 end
 
 # Identity
@@ -43,30 +43,8 @@ Base.convert(::Type{<:ContextManager}, x::Identity) = @ContextManager cont -> co
 # while ContextManager should only have one call to `cont`.
 
 
-# conversions among Union Types
-# =============================
-
-# Option
-# ------
-
-# we need to overwrite convert, because in the case that no conversion is possible, we currently get the super uninformative error
-# ERROR: could not compute non-nothing type
-# Stacktrace:
-#  [1] nonnothingtype_checked(::Type) at ./some.jl:29
-#  [2] convert(::Type{Union{Nothing, Some{T}} where T}, ::Int64) at ./some.jl:34
-#  [3] top-level scope at none:0
-# importantly, we should only add clauses for Type{Option} and not Type{<:Option} to not interfere with existing code
-Base.convert(::Type{Option}, x::Option) = x
-
-Base.convert(::Type{Option{T}}, x::Identity) where T = Identity(Base.convert(T, x))
-Base.convert(::Type{Option{T}}, x::Identity{T}) where T = x  # nothing to convert
-Base.convert(::Type{Option{T}}, x::Const{Nothing}) where T = x  # nothing to convert
-Base.convert(::Type{Option}, x::Const{Nothing}) = x  # nothing to convert
-Base.convert(::Type{Option}, x::Identity) = x  # nothing to convert
-
-
-# Either
-# ------
+# Option, Either, Try
+# -------------------
 
 Base.convert(::Type{Either{L, R}}, x::Identity) where {L, R} = Identity(Base.convert(R, x.value))
 Base.convert(::Type{Either{L, R}}, x::Identity{R}) where {L, R} = x  # nothing to convert
