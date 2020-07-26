@@ -15,6 +15,7 @@ end == Identity(3 + 4)
 @test length(Identity([1,2,3,4])) == 1
 
 @test get(Identity(42)) == 42
+@test Identity(42)[] == 42
 
 @test isidentity(Identity(4))
 @test !isidentity(Const(3))

@@ -29,6 +29,8 @@ isidentity(other) = false
 Base.length(::Identity) = 1
 
 Base.get(a::Identity) = a.value
+Base.getindex(a::Identity) = a.value
+
 Base.eltype(::Type{<:Identity{T}}) where T = T
 Base.eltype(::Type{<:Identity}) = Any
 
