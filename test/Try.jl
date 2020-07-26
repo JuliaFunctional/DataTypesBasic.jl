@@ -10,6 +10,7 @@ using Test
 @test istry(@Try :value)
 @test istry(@TryCatch ErrorException error("an error"))
 @test istry(@TryCatch ErrorException :value)
+@test !istry(Some(4))
 
 @test issuccess(@Try 5)
 @test !issuccess(@Try error("hi"))
