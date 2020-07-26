@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI via GitHubActions
 - Documentation via Documenter.jl and GitHubActions
 - Codecoverage via GitHubActions and Codecov
+- extensive Testing
 - TagBot and CompatHelper GitHubActions
 - extensive `promote_rule` and `promote_typejoin` implementations have been added for Identity,
   Const, Option, Either, OptionEither.
@@ -28,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - foreach for Identity is fixed
+- convert for Identity and Const preserves the container type now
+- equality == for Thrown works now
+- promote_type for Either (was too imprecise)
 
 ## [0.3.0] - 2020-03-23
 ### Changed
