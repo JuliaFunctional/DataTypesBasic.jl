@@ -36,7 +36,9 @@ Iterators.flatten(c::Const) = c
 
 Base.eltype(::Type{<:Const}) = Any
 
-Base.convert(::Type{Const{T}}, x::Const) where {T} = Const(Base.convert(T, x.value))
+Base.convert(::Type{Const{T}}, x::Const{T}) where {T} = x
+Base.convert(::Type{Const{T}}, x::Const) where {T} = Const{T}(convert(T, x.value))
+
 # Const is covariate
 # promote_rule only works on concrete types, more general checks Type{<:Const} may overwrite
 # unintentionally more specific promote_rule types

@@ -38,7 +38,9 @@ Base.foreach(f, a::Identity) = begin f(a.value); nothing; end
 Base.map(f, a::Identity) = Identity(f(a.value))
 Base.Iterators.flatten(a::Identity) = convert(Identity, a.value)
 
-Base.convert(::Type{Identity{T}}, x::Identity) where {T} = Identity(Base.convert(T, x.value))
+Base.convert(::Type{Identity{T}}, x::Identity{T}) where {T} = x
+Base.convert(::Type{Identity{T}}, x::Identity) where {T} = Identity{T}(convert(T, x.value))
+
 # Identity is covariate
 # promote_rule only works on concrete types, more general checks Type{<:Const} may overwrite
 # unintentionally more specific promote_rule types
