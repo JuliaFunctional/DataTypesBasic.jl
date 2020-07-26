@@ -29,7 +29,3 @@ Pages = ["manual.md"]
 ```@contents
 Pages = ["library.md"]
 ```
-
-```@index
-Pages = ["library.md"]
-```
