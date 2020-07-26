@@ -30,6 +30,7 @@ issome
 isnone
 iftrue
 iffalse
+getOption
 ```
 
 ## Either
@@ -45,7 +46,6 @@ getleft
 getright
 getleftOption
 getrightOption
-getOption
 ```
 
 ## Try
@@ -57,7 +57,6 @@ Try
 istry
 issuccess
 isfailure
-getOption
 ```
 
 ## ContextManager
