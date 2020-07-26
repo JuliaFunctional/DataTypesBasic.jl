@@ -16,9 +16,6 @@ thrown.
 const Try{T} = Union{Const{<:Exception}, Identity{T}}
 Try(t) = Identity(t)
 Try(t::Exception) = Const(t)
-Try{T}(t::T) where T = Identity(t)
-Try{T}(other) where T = Const(other)
-
 
 
 """
@@ -33,7 +30,7 @@ end
 
 # == controversy https://github.com/JuliaLang/julia/issues/4648
 function Base.:(==)(a::Thrown, b::Thrown)
-  a.exception == b.exception && a.stack == b.stack
+  a.exception == b.exception && a.stacktrace == b.stacktrace
 end
 
 function Base.show(io::IO, x::Thrown)
@@ -95,10 +92,6 @@ Base.merge(e::Exception, f::Thrown) = MultipleExceptions((e, f))
 Base.merge(es::MultipleExceptions, e::Exception) = MultipleExceptions(tuple(es.exceptions..., e))
 Base.merge(e::Exception, fs::MultipleExceptions) = MultipleExceptions(tuple(e, fs.exceptions...))
 Base.merge(es1::MultipleExceptions, es2::MultipleExceptions) = MultipleExceptions(tuple(es1.exceptions..., es2.exceptions...))
-
-# enable Try for conversion
-Base.convert(::Type{Try{T}}, x::Identity{S}) where {S, T} = Identity(Base.convert(T, x.value))
-promote_rule(::Type{Try{T}}, ::Type{Try{S}}) where {T, S<:T} = Try{T}
 
 
 # we use a macro instead of dispatching on Try(f::Function) as this interferes e.g. with mapn
