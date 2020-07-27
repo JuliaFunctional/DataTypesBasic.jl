@@ -7,8 +7,6 @@
 
 This package defines julia implementations for the common types `Option` (aka `Maybe`), `Either` and `Try`, as well as one extra type `ContextManager` which mimics Python's `with`-ContextManager.
 
-For more details check out the [documentation](https://JuliaFunctional.github.io/DataTypesBasic.jl/dev/).
-
 
 ## Installation
 
@@ -24,3 +22,5 @@ Use it like
 ```julia
 using DataTypesBasic
 ```
+
+For more details check out the [documentation](https://JuliaFunctional.github.io/DataTypesBasic.jl/dev/).
