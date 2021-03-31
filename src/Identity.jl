@@ -9,6 +9,7 @@ container-abstractions.
 """
 struct Identity{T}
   value::T
+  Identity(value) = new{typeof(value)}(value)
 end
 # == controversy https://github.com/JuliaLang/julia/issues/4648
 Base.:(==)(a::Identity, b::Identity) = a.value == b.value

@@ -6,6 +6,7 @@ however with additional information about which kind of empty.
 """
 struct Const{T}
   value::T
+  Const(value) = new{typeof(value)}(value)
 end
 
 # == controversy https://github.com/JuliaLang/julia/issues/4648
