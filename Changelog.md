@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - `Option(3)` works now
 - The constructors `Const{ElementType}(value)` and `Identity{ElementType}(value)` had been removed already, however were still used. Maybe this now gave errors because of newer julia version, don't know, but now everything uses `Const(value)` and `Identity(value)` instead.
+- fixed a couple of disambiguation errors which magically appeared after switching to Julia 1.6
 
 ### Removed
 - `Option{T}(value::T)` didn't work and is removed now, as it does not provide any benefit anylonger, which is a breaking change

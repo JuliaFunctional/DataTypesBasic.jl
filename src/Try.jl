@@ -86,11 +86,9 @@ function Base.showerror(io::IO, ::MIME"text/plain", exc::MultipleExceptions)
   Base.show(io, MIME"text/plain"(), exc)
 end
 
-Base.merge(f1::Thrown, f2::Thrown) = MultipleExceptions((f1, f2))
-Base.merge(f::Thrown, e::Exception) = MultipleExceptions((f, e))
-Base.merge(e::Exception, f::Thrown) = MultipleExceptions((e, f))
+Base.merge(e1::Exception, e2::Exception) = MultipleExceptions((e1, e2))
 Base.merge(es::MultipleExceptions, e::Exception) = MultipleExceptions(tuple(es.exceptions..., e))
-Base.merge(e::Exception, fs::MultipleExceptions) = MultipleExceptions(tuple(e, fs.exceptions...))
+Base.merge(e::Exception, es::MultipleExceptions) = MultipleExceptions(tuple(e, es.exceptions...))
 Base.merge(es1::MultipleExceptions, es2::MultipleExceptions) = MultipleExceptions(tuple(es1.exceptions..., es2.exceptions...))
 
 

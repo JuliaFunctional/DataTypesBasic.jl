@@ -75,7 +75,9 @@ end
 # ContextManager is just a wrapper
 # pass through function call syntax
 (c::ContextManager)(cont) = c.f(cont)
-Base.run(cont, c::ContextManager) = c(cont)
+# in principle `cont` could be anything, as anything could be a function, however we have an ambiguity with Base AbstractCmd, and as this is mainly used for do-syntax
+# it should be fine to restrict to `Function` 
+Base.run(cont::Function, c::ContextManager) = c(cont)
 Base.run(c::ContextManager) = c(identity)
 
 
