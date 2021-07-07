@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+### Fixed
+- `Option(3)` works now
+- The constructors `Const{ElementType}(value)` and `Identity{ElementType}(value)` had been removed already, however were still used. Maybe this now gave errors because of newer julia version, don't know, but now everything uses `Const(value)` and `Identity(value)` instead.
 ## [1.0.0] - 2020-07-19
 ### Added
 - CI via GitHubActions

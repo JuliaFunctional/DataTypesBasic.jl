@@ -29,8 +29,8 @@ end == Identity(3 + 4)
   print(5)
 end) == "5"
 
-@test convert(Identity{Float32}, Identity(1)) == Identity{Float32}(Float32(1))
-@test convert(Identity{Number}, Identity(1)) == Identity{Number}(1)
+@test convert(Identity{Float32}, Identity(1)) == Identity(Float32(1))
+@test convert(Identity{Number}, Identity(1)) == Identity(1)
 
 @test promote_type(Identity{Int}, Identity{Number}) == Identity{Number}
 @test promote_type(Identity{Int}, Identity{String}) == Identity

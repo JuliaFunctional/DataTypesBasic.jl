@@ -15,11 +15,8 @@ We reuse [`Identity`](@ref) as representing the single-element-container and `Co
 """
 const Option{T} = Union{Const{Nothing}, Identity{T}}
 
-Option{T}(::Nothing) where T = Const(nothing)
-Option{T}(a::T) where T = Identity{T}(a)
 Option(::Nothing) = Const(nothing)
-Option(a::T) where T = Identity{T}(a)
-Option{T}() where T = Const(nothing)
+Option(a) = Identity(a)
 Option() = Const(nothing)
 
 

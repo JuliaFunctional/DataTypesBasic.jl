@@ -23,8 +23,8 @@ end) == ""
 
 @test Iterators.flatten(Const(5)) == Const(5)
 
-@test convert(Const{Float32}, Const(1)) == Const{Float32}(Float32(1))
-@test convert(Const{Number}, Const(1)) == Const{Number}(1)
+@test convert(Const{Float32}, Const(1)) == Const(Float32(1))
+@test convert(Const{Number}, Const(1)) == Const(1)
 
 @test promote_type(Const{Int}, Const{Number}) == Const{Number}
 @test promote_type(Const{Int}, Const{String}) == Const
