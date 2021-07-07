@@ -25,9 +25,12 @@ returns true only if given an instance of  [`DataTypesBasic.Const`](@ref)
 Base.isconst(::Const) = true
 Base.isconst(other) = false
 
+# length 0 corresponds directly to Base.iterate
 Base.length(::Const) = 0
 
-# as the length of Const is 0, we intentionally do not support `Base.get`
+# for convenience we support different access functions so that users do not have to remember the name of the single field "value" 
+Base.get(c::Const) = c.value
+Base.getindex(c::Const) = c.value
 
 # const just does nothing, i.e. leaves everything constant
 Base.iterate(c::Const) = nothing

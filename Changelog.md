@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `Base.get` and `Base.getindex` are now both implemented for `Const` (like they are implemented already for `Identity`), to simplify working with `Const`.
 
 ### Fixed
 - `Option(3)` works now
