@@ -9,8 +9,6 @@ using DataTypesBasic
 @test convert(Vector, Const(43)) == []
 @test convert(Vector, @ContextManager cont -> cont(2)) == [2]
 
-@test convert(Identity, Option()) == Option()
-@test convert(Identity, Const(:error)) == Const(:error)
 @test convert(Identity, @ContextManager cont -> cont(2)) == Identity(2)
 @test_throws MethodError convert(Identity, [1,2,3])
 

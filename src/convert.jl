@@ -21,9 +21,6 @@ end
 # Identity
 # --------
 
-# Const are just passed through when asked to convert to identity
-# this is intended special behaviour in order for Identity + Const to work together as Option/Either
-Base.convert(::Type{Identity}, x::Const) = x
 # ContextManager is executed
 Base.convert(::Type{<:Identity}, x::ContextManager) = Identity(run(x))
 

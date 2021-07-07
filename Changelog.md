@@ -6,12 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - ?????
 ### Added
 - `Base.get` and `Base.getindex` are now both implemented for `Const` (like they are implemented already for `Identity`), to simplify working with `Const`.
 
 ### Fixed
 - `Option(3)` works now
 - The constructors `Const{ElementType}(value)` and `Identity{ElementType}(value)` had been removed already, however were still used. Maybe this now gave errors because of newer julia version, don't know, but now everything uses `Const(value)` and `Identity(value)` instead.
+
+### Removed
+- `Option{T}(value::T)` didn't work and is removed now, as it does not provide any benefit anylonger, which is a breaking change
+- `Option{T}()` is also removed for completeness, which is a breaking change
+- `Const` no longer converts to `Identity`. This was added so that a `Const` nested within an `Identity` can be flattened. However, there is a better alternative, namely now the `flatmap` operator on `Identity` just strips away the outer Identity, without any call to `convert`. This is simpler and more convenient approach which also makes the hacky conversion no longer needed. Still this is a breaking change.
+
 ## [1.0.0] - 2020-07-19
 ### Added
 - CI via GitHubActions

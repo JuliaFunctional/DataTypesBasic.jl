@@ -39,7 +39,8 @@ Base.iterate(a::Identity) = a.value, nothing
 Base.iterate(a::Identity, state) = state
 Base.foreach(f, a::Identity) = begin f(a.value); nothing; end
 Base.map(f, a::Identity) = Identity(f(a.value))
-Base.Iterators.flatten(a::Identity) = convert(Identity, a.value)
+# for convenience, Identity does not use convert, whatever monad is returned is valid, providing maximum flexibility.
+Base.Iterators.flatten(a::Identity) = a.value
 
 Base.convert(::Type{Identity{T}}, x::Identity{T}) where {T} = x
 Base.convert(::Type{Identity{T}}, x::Identity) where {T} = Identity(convert(T, x.value))
