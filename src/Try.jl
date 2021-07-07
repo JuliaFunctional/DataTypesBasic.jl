@@ -115,7 +115,7 @@ macro Try(expr)
   quote
     try
       r = $(esc(expr))
-      Identity{typeof(r)}(r)
+      Identity(r)
     catch exc
       Const(Thrown(exc, Base.catch_stack()))
     end
@@ -148,7 +148,7 @@ macro TryCatch(exception, expr)
   quote
     try
       r = $(esc(expr))
-      Identity{typeof(r)}(r)
+      Identity(r)
     catch exc
       if exc isa $(esc(exception))
         Const(Thrown(exc, Base.catch_stack()))
