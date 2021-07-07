@@ -38,7 +38,7 @@ function Base.show(io::IO, x::Thrown)
 end
 
 # Multiline version, following https://docs.julialang.org/en/v1/manual/types/#man-custom-pretty-printing-1
-function Base.show(io::IO, ::MIME"text/plain", exc::Thrown{E}) where {E}
+function Base.show(io::IO, ::MIME"text/plain", exc::Thrown)
   println(io, "Thrown($(repr(exc.exception)))")
   for (exc′, bt′) in exc.stacktrace
     showerror(io, exc′, bt′)
