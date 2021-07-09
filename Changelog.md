@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - `Option{T}(value::T)` didn't work and is removed now, as it does not provide any benefit anylonger, which is a breaking change
 - `Option{T}()` is also removed for completeness, which is a breaking change
-- `Const` no longer converts to `Identity`. This was added so that a `Const` nested within an `Identity` can be flattened. However, there is a better alternative, namely now the `flatmap` operator on `Identity` just strips away the outer Identity, without any call to `convert`. This is simpler and more convenient approach which also makes the hacky conversion no longer needed. Still this is a breaking change.
+- `Const` no longer converts to `Identity`. This was added originally so that a `Const` nested within an `Identity` can be flattened. However, there is a better alternative, namely now the `flatmap` operator on `Identity` just strips away the outer Identity, without any call to `convert`. This is simpler and more convenient approach which also makes the hacky conversion no longer needed. This is a breaking change.
 
 ## [1.0.0] - 2020-07-19
 ### Added
