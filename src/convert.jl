@@ -1,14 +1,17 @@
 # conversions among concrete types
 # ================================
 
-# Vector
-# ------
+# AbstractVector
+# --------------
 
-Base.convert(::Type{<:Vector}, x::Identity) = [x.value]
-Base.convert(::Type{<:Vector}, x::Nothing) = []
-Base.convert(::Type{<:Vector}, x::Const) = []
+# Because `AbstractVector <: AbstractArray`, and more especially `Base.typename(Vector) == Array`,
+# we are dispatching on AbstractArray instead of AbstractVector
+
+Base.convert(T::Type{<:AbstractArray}, x::Identity) = convert(T, [x.value])
+Base.convert(T::Type{<:AbstractArray}, x::Const) = convert(T, [])
 # ContextManager is executed if someone asks for a Vector from ContextManager
-Base.convert(::Type{<:Vector}, x::ContextManager) = [x(identity)]
+Base.convert(T::Type{<:AbstractArray}, x::ContextManager) = convert(T, [x(identity)])
+
 
 # Const
 # -----
@@ -17,6 +20,7 @@ function Base.convert(::Type{Const}, x::Vector)
   @assert isempty(x) "can only convert empty Vector to Nothing, got $(x)"
   Const(nothing)  # == Option()
 end
+
 
 # Identity
 # --------
@@ -48,7 +52,10 @@ Base.convert(::Type{Either{L, R}}, x::Identity{R}) where {L, R} = x  # nothing t
 Base.convert(::Type{Either{L, R}}, x::Const) where {L, R} = Const(Base.convert(L, x.value))
 Base.convert(::Type{Either{L, R}}, x::Const{L}) where {L, R} = x  # nothing to convert
 
-Base.convert(::Type{Either{<:Any, R}}, x::Identity) where {R} = Identity(Base.convert(R, x.value))
 Base.convert(::Type{Either{<:Any, R}}, x::Identity{R}) where {R} = x  # nothing to convert
-Base.convert(::Type{Either{L, <:Any}}, x::Const) where {L} = Const(Base.convert(L, x.value))
+Base.convert(::Type{Either{<:Any, R}}, x::Identity) where {R} = Identity(Base.convert(R, x.value))
 Base.convert(::Type{Either{L, <:Any}}, x::Const{L}) where {L} = x  # nothing to convert
+Base.convert(::Type{Either{L, <:Any}}, x::Const) where {L} = Const(Base.convert(L, x.value))
+
+Base.convert(::Type{Either}, x::Identity) = x
+Base.convert(::Type{Either}, x::Const) = x
