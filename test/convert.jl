@@ -5,9 +5,9 @@ using DataTypesBasic
 @test_throws AssertionError convert(Const, [1,2,3])
 
 @test convert(Vector, Identity("hello")) == ["hello"]
-@test convert(Vector, nothing) == []
 @test convert(Vector, Const(43)) == []
 @test convert(Vector, @ContextManager cont -> cont(2)) == [2]
+@test_throws MethodError convert(Vector, nothing)
 
 @test convert(Identity, @ContextManager cont -> cont(2)) == Identity(2)
 @test_throws MethodError convert(Identity, [1,2,3])
