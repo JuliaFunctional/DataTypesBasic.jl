@@ -19,13 +19,13 @@ Try(t::Exception) = Const(t)
 
 
 """
-    Thrown(exception::Exception, stacktrace::Vector)
+    Thrown(exception, stacktrace)
 
 Thrown is like Exception, however can also cary stacktraces
 """
-struct Thrown{E} <: Exception
+struct Thrown{E, S} <: Exception
   exception::E
-  stacktrace::Vector
+  stacktrace::S
 end
 
 # == controversy https://github.com/JuliaLang/julia/issues/4648
