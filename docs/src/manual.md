@@ -97,7 +97,7 @@ flatten(a::Identity) = a.value
 flatten(a::Const) = a
 
 # map a function over 2 Options, getting an option back
-function map2(f, a::Option{S}, b::Option{T}) where {S, T}
+function map2(f, a::Option, b::Option)
   nested_option = map(a) do a′
     map(b) do b′
       f(a′, b′)
@@ -290,7 +290,7 @@ the `@monadic` syntax. This working pattern is very common and can also be used 
 The syntax is called `monadic`, as `map` and `flatmap` define what in functional programming is called a `Monad` (think
   of it as a container which knows how to flatten out itself).
 
-The package `TypeClasses.jl` captures this idea in more depth. There you can also find a syntax `@syntax_flatmap`
+The package [`TypeClasses.jl`](https://github.com/JuliaFunctional/TypeClasses.jl) captures this idea in more depth. There you can also find a syntax `@syntax_flatmap`
  which refers to exactly the above use of `@monadic`.
 
 For further details, don't hesitate to consult the source code `src/ContextManager.jl` or take a look at the tests
