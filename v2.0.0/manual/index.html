@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Manual · DataTypesBasic.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link rel="canonical" href="https://JuliaFunctional.github.io/DataTypesBasic.jl/manual/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">DataTypesBasic.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li class="is-active"><a class="tocitem" href>Manual</a><ul class="internal"><li><a class="tocitem" href="#Identity"><span>Identity</span></a></li><li><a class="tocitem" href="#Const"><span>Const</span></a></li><li><a class="tocitem" href="#Option"><span>Option</span></a></li><li><a class="tocitem" href="#Either"><span>Either</span></a></li><li><a class="tocitem" href="#Try"><span>Try</span></a></li><li><a class="tocitem" href="#ContextManager"><span>ContextManager</span></a></li></ul></li><li><a class="tocitem" href="../library/">Library</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Manual</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Manual</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaFunctional/DataTypesBasic.jl/blob/master/docs/src/manual.md#L" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Manual"><a class="docs-heading-anchor" href="#Manual">Manual</a><a id="Manual-1"></a><a class="docs-heading-anchor-permalink" href="#Manual" title="Permalink"></a></h1><p>This package defines julia implementations for the common types <code>Option</code> (aka <code>Maybe</code>), <code>Either</code> and <code>Try</code>, as well as one extra type <code>ContextManager</code> which mimics Python&#39;s <code>with</code>-ContextManager.</p><p>Unlike typical implementations of <code>Option</code>, and <code>Either</code> which define them as new separate type-hierarchies, in <code>DataTypesBasic</code> both actually share a common parts: <code>Identity</code> and <code>Const</code>.</p><h2 id="Identity"><a class="docs-heading-anchor" href="#Identity">Identity</a><a id="Identity-1"></a><a class="docs-heading-anchor-permalink" href="#Identity" title="Permalink"></a></h2><p><code>Identity</code> is the most basic container you can imagine. It just contains one value and always one value. It is similar to <code>Base.Some</code>, however with one notable difference. While <code>Some([]) != Some([])</code> (because it is treated more like <code>Ref</code>), for <code>Identity</code> we have <code>Identity([]) == Identity([])</code>, as <code>Identity</code> works like a Container.</p><pre><code class="language-julia-repl">julia&gt; a = Identity(3)
+Identity(3)
+julia&gt; map(x -&gt; 2x, a)
+Identity(6)
+julia&gt; foreach(println, a)
+3
+julia&gt; for i in Identity(&quot;hello&quot;)
+         print(&quot;$i world&quot;)
+       end
+hello world</code></pre><p>Think of <code>Identity</code> as lifting a value into the world of containers. <code>DataTypesBasic</code> knows a lot about how to convert an <code>Identity</code> container to a <code>Vector</code> or else. This will come in handy soon. For now it is important to understand that wrapping some value <code>42</code> into <code>Identity(42)</code> makes it interactable on a container-level.</p><h2 id="Const"><a class="docs-heading-anchor" href="#Const">Const</a><a id="Const-1"></a><a class="docs-heading-anchor-permalink" href="#Const" title="Permalink"></a></h2><p><code>Const</code> looks like <code>Identity</code>, but behaves like an empty container. Its name suggests that whatever is in it will stay <strong>const</strong>ant. Alternatively, it can also be interpreted as aborting a program. Use <code>Const(nothing)</code> to represent an empty Container. <code>Const(...)</code> is in this sense an empty container with additional information.</p><pre><code class="language-julia">struct Identity{T}
+  value::T
+end
+struct Const{T}
+  value::T
+end</code></pre><pre><code class="language-julia-repl">julia&gt; a = Const(3)
+Const(3)
+julia&gt; map(x -&gt; 2x, a)
+Const(3)
+julia&gt; foreach(println, a)
+
+julia&gt; for i in Identity(&quot;hello&quot;)
+         print(&quot;$i world&quot;)
+       end
+</code></pre><hr/><h2 id="Option"><a class="docs-heading-anchor" href="#Option">Option</a><a id="Option-1"></a><a class="docs-heading-anchor-permalink" href="#Option" title="Permalink"></a></h2><p>Option is a container which has either 1 value or 0. Having <code>Identity</code> and <code>Const{Nothing}</code> already at hand, it is defined as</p><pre><code class="language-julia">Option{T} = Union{Identity{T}, Const{Nothing}}</code></pre><p>Use it like</p><pre><code class="language-julia">using DataTypesBasic
+
+fo(a::Identity{String}) = a.value * &quot;!&quot;
+fo(a::Const{Nothing}) = &quot;fallback behaviour&quot;
+
+fo(Option(&quot;hi&quot;))  # &quot;hi!&quot;
+fo(Option(nothing))  # &quot;fallback behaviour&quot;
+fo(Option())  # &quot;fallback behaviour&quot;</code></pre><p>The real power of <code>Option</code> comes from generic functionalities which you can define on it. <code>DataTypesBasic</code> already defines the following: <code>Base.iterate</code>, <code>Base.foreach</code>, <code>Base.map</code>, <code>Base.get</code>, <code>Base.Iterators.flatten</code>, <code>DataTypesBasic.iftrue</code>, <code>DataTypesBasic.iffalse</code>, <code>Base.isnothing</code>, <code>DataTypesBasic.issomething</code>. Please consult the respective function definition for details.</p><p>Here an example for such a higher level perspective</p><pre><code class="language-julia">using DataTypesBasic
+
+flatten(a::Identity) = a.value
+flatten(a::Const) = a
+
+# map a function over 2 Options, getting an option back
+function map2(f, a::Option, b::Option)
+  nested_option = map(a) do a′
+    map(b) do b′
+      f(a′, b′)
+    end
+  end
+  flatten(nested_option)
+end
+
+map2(Option(&quot;hi&quot;), Option(&quot;there&quot;)) do a, b
+  &quot;$a $b&quot;
+end  # Identity(&quot;hi there&quot;)
+
+map2(Option(1), Option()) do a, b
+  a + b
+end  # Const(nothing)</code></pre><p>The package <code>TypeClasses.jl</code> (soon to come) implements a couple of such higher level concepts of immense use (like Functors, Applicatives and Monads).</p><p>For further details, don&#39;t hesitate to consult the source code <code>src/Option.jl</code> or take a look at the tests <code>test/Option.jl</code>.</p><h2 id="Either"><a class="docs-heading-anchor" href="#Either">Either</a><a id="Either-1"></a><a class="docs-heading-anchor-permalink" href="#Either" title="Permalink"></a></h2><p><code>Either</code> is exactly like <code>Option</code> a container which has either 1 value or 0. In addition to <code>Option</code>, the <code>Either</code> data type captures extra information about the empty case.</p><p>As such it is defined as a union of the two types <code>Identity</code> and <code>Const</code>.</p><pre><code class="language-julia">Either{Left, Right} = Union{Const{Left}, Identity{Right}}</code></pre><p>It is typical to describe the <code>Const</code> part as &quot;Left&quot; in the double meaning of being the left type-parameter as well as a hint about its semantics of describing the empty case, like &quot;what is finally left&quot;. On the other hand &quot;Right&quot; also has its double meaning of being the right type-parameter, and also the &quot;the right value&quot; in the sense of correct (no abort).</p><p>Use it like</p><pre><code class="language-julia">using DataTypesBasic
+
+fe(a::Identity{Int}) = a.value * a.value
+fe(a::Const{String}) = &quot;fallback behaviour &#39;$(a.value)&#39;&quot;
+
+fe(Either{String}(7))  # 49
+fe(Either{String}(&quot;some error occured&quot;))  # &quot;fallback behaviour &#39;some error occured&#39;&quot;
+
+myeither = either(&quot;error&quot;, 2 &gt; 3, 42)
+fe(myeither)  # &quot;fallback behaviour &#39;error&#39;&quot;</code></pre><p>You also have support for <code>Iterators.flatten</code> in order to work &quot;withing&quot; Either, and combine everything correctly.</p><pre><code class="language-julia">check_threshold(a) = a &lt; 15 ? Const((a, &quot;threshold not reached&quot;)) : Identity(&quot;checked threshold successfully&quot;)
+
+map(check_threshold, Identity(30)) |&gt; Iterators.flatten  # Identity(&quot;checked threshold successfully&quot;)
+map(check_threshold, Identity(12)) |&gt; Iterators.flatten  # Const((12, &quot;threshold not reached&quot;))
+# when working within another Const, think of it as if the first abort always &quot;wins&quot;
+map(check_threshold, Const(&quot;something different already happend&quot;)) |&gt; Iterators.flatten  # Const(&quot;something different already happend&quot;)</code></pre><p>Similar like for <code>Option</code>, there are many higher-level concepts (like Functors, Applicatives and Monads) which power unfold also over <code>Either</code>. Checkout the package <code>TypeClasses.jl</code> (soon to come) for a collection of standard helpers and interfaces.</p><p>For further details, don&#39;t hesitate to consult the source code <code>src/Either.jl</code> or take a look at the tests <code>test/Either.jl</code>.</p><h2 id="Try"><a class="docs-heading-anchor" href="#Try">Try</a><a id="Try-1"></a><a class="docs-heading-anchor-permalink" href="#Try" title="Permalink"></a></h2><p><code>Try</code> is another special case of <code>Either</code>, where <code>Const</code> can only bear Exceptions.</p><pre><code class="language-julia">Try{T} = Union{Const{&lt;:Exception}, Identity{T}}</code></pre><p>This is very handy. It gives you the possibility to work with errors just as you would do with other values, no need for dealing with <code>try</code>-<code>catch</code>.</p><p>Use it like</p><pre><code class="language-julia">using DataTypesBasic
+
+ft(a::Identity) = a.value * a.value
+ft(a::Const{&lt;:Exception}) = &quot;got an error &#39;$(a.value)&#39;&quot;
+
+ft(@Try 1/0)  # Inf
+ft(@TryCatch ErrorException error(&quot;some error&quot;))  # &quot;got an error &#39;Thrown(ErrorException(\&quot;some error\&quot;))&#39;&quot;
+
+ft(@TryCatch ArgumentError error(&quot;another error&quot;))  # raises the error as normal</code></pre><p>There are many higher-level concepts (like Functors, Applicatives and Monads) which power also applies to <code>Try</code>. Checkout the package <code>TypeClasses.jl</code> (soon to come) for a collection of standard helpers and interfaces.</p><p>For further details, don&#39;t hesitate to consult the source code <code>src/Try.jl</code> or take a look at the tests <code>test/Try.jl</code>.</p><hr/><h2 id="ContextManager"><a class="docs-heading-anchor" href="#ContextManager">ContextManager</a><a id="ContextManager-1"></a><a class="docs-heading-anchor-permalink" href="#ContextManager" title="Permalink"></a></h2><p>Finally there is the context-manager. It is quite separate from the others, however still one of my major containers which I used a lot in my passed in other programming languages. For instance in Python context-managers have the extra <code>with</code> syntax, which allows you to wrap code blocks very simply with some Initialization &amp; Cleanup, handled by the context-manager.</p><p>The way we represent a contextmanager is actually very compact. &quot;&quot;&quot; function which expects one argument, which itself is a function. Think of it like the following:</p><pre><code class="language-julia">struct ContextManager{Func}
+  f::Func
+end</code></pre><p>It just takes a function. However the function needs to follow some rules</p><pre><code class="language-julia">function contextmanagerready_func(cont)  # take only a single argument, the continuation function `cont`
+  # ... do something before
+  value = ... # create some value to work on later
+  result = cont(value)  # pass the value to the continuation function (think like `yield`, but call exactly once)
+  # ... do something before exiting, e.g. cleaning up
+  result # IMPORTANT: always return the result of the `cont` function
+end</code></pre><p>Now you can wrap it into <code>ContextManager(contextmanagerready)</code> and you can use all the context manager functionalities right away.</p><p>Let&#39;s create some ContextManagers</p><pre><code class="language-julia">using DataTypesBasic
+context_print(value) = ContextManager(function(cont)
+  println(&quot;initializing value=$value&quot;)
+  result = cont(value)
+  println(&quot;finalizing value=$value, got result=$result&quot;)
+  result
+end)
+
+# for convenience we also provide a `@ContextManager` macro which is the same as plain `ContextManager`,
+# however you can leave out the extra parantheses.
+context_ref(value) = @ContextManager function(cont)
+  refvalue = Ref{Any}(value)
+  println(&quot;setup Ref $refvalue&quot;)
+  result = cont(refvalue)
+  refvalue[] = nothing
+  println(&quot;destroyed Ref $refvalue&quot;)
+  result
+end
+
+# we can try out a contextmanager, by providing `identity` as the continuation `cont`
+context_print(&quot;value&quot;)(identity)  # 4
+# initializing value=4
+# finalizing value=4, got result=4
+
+# or alternatively we can use Base.run
+run(context_ref(4))  # Base.RefValue{Any}(nothing)
+# setup Ref Base.RefValue{Any}(4)
+# destroyed Ref Base.RefValue{Any}(nothing)</code></pre><p>In a sense, these ContextManagers are a simple value with some sideeffects before and after. In functional programming it is key to cleanly captualize such side effects. That is also another reason why Option, Either, and Try are so common.</p><p>Using <code>Monadic.jl</code> we can actually work on ContextManagers as they would be values.</p><pre><code class="language-julia">using Monadic
+flatmap(f, x) = Iterators.flatten(map(f, x))
+combined_context = @monadic map flatmap begin
+  a = context_print(4)
+  b = context_ref(a + 100)
+  @pure a * b[]
+end
+
+run(combined_context)  # 416
+# initializing value=4
+# setup Ref Base.RefValue{Any}(104)
+# destroyed Ref Base.RefValue{Any}(nothing)
+# finalizing value=4, got result=416</code></pre><p>As you see, the contextmanager properly nest into one-another. And everything is well captured in the background by the <code>@monadic</code> syntax. This working pattern is very common and can also be used for <code>Option</code>, <code>Either</code> and <code>Try</code>. The syntax is called <code>monadic</code>, as <code>map</code> and <code>flatmap</code> define what in functional programming is called a <code>Monad</code> (think   of it as a container which knows how to flatten out itself).</p><p>The package <a href="https://github.com/JuliaFunctional/TypeClasses.jl"><code>TypeClasses.jl</code></a> captures this idea in more depth. There you can also find a syntax <code>@syntax_flatmap</code>  which refers to exactly the above use of <code>@monadic</code>.</p><p>For further details, don&#39;t hesitate to consult the source code <code>src/ContextManager.jl</code> or take a look at the tests <code>test/ContextManager.jl</code>.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../library/">Library »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.3 on <span class="colophon-date" title="Thursday 15 July 2021 08:20">Thursday 15 July 2021</span>. Using Julia version 1.6.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
