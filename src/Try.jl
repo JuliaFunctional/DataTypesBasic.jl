@@ -119,7 +119,7 @@ macro Try(expr)
       r = $(esc(expr))
       Identity(r)
     catch exc
-      Const(Thrown(exc, Base.catch_stack()))
+      Const(Thrown(exc, Base.catch_backtrace()))
     end
   end
 end
