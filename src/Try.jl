@@ -109,7 +109,7 @@ try
   r = your_code
   Identity(r)
 catch exc
-  Const(Thrown(exc, Base.catch_backtrace()))
+  Const(Thrown(exc, Base.catch_stack()))
 end
 ```
 """
@@ -119,7 +119,7 @@ macro Try(expr)
       r = $(esc(expr))
       Identity(r)
     catch exc
-      Const(Thrown(exc, Base.catch_backtrace()))
+      Const(Thrown(exc, Base.catch_stack()))
     end
   end
 end
@@ -139,7 +139,7 @@ try
   Identity(r)
 catch exc
   if exc isa YourException
-    Const(Thrown(exc, Base.catch_backtrace()))
+    Const(Thrown(exc, Base.catch_stack()))
   else
     rethrow()
   end
@@ -153,7 +153,7 @@ macro TryCatch(exception, expr)
       Identity(r)
     catch exc
       if exc isa $(esc(exception))
-        Const(Thrown(exc, Base.catch_backtrace()))
+        Const(Thrown(exc, Base.catch_stack()))
       else
         rethrow()
       end
