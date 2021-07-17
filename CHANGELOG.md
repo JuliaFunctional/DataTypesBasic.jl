@@ -6,13 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.0.3] - 2021-07-17
+## [2.0.2] - 2021-07-17
 ### Changed
 - reverting `Base.catch_backtrace()` to `Base.catch_stack()` everywhere. Apparently this is really only an issue on julia nightly and should not be changed in julia 1.6. Hence reverting everything.
-
-## [2.0.2] - 2021-07-17
-### Fixed
-- using `Base.catch_backtrace()` now also in `@TryCatch`
 
 ## [2.0.1] - 2021-07-16
 ### Changed
