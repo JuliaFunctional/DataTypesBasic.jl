@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.2] - 2021-07-17
+### Fixed
+- using `Base.catch_backtrace()` now also in `@TryCatch`
+
 ## [2.0.1] - 2021-07-16
 ### Changed
 - using `Base.catch_backtrace()` now instead of `Base.catch_stack()` which got deprecated
