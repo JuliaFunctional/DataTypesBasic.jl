@@ -20,4 +20,5 @@ makedocs(;
 
 deploydocs(;
     repo="github.com/JuliaFunctional/DataTypesBasic.jl",
+    devbranch="main",
 )
