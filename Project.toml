@@ -1,7 +1,7 @@
 name = "DataTypesBasic"
 uuid = "83eed652-29e8-11e9-12da-a7c29d64ffc9"
 authors = ["Sahm Stephan <stephan.sahm@gmx.de>"]
-version = "2.0.2"
+version = "2.0.3"
 
 [compat]
 julia = "1.6"
