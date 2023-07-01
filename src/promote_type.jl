@@ -211,7 +211,7 @@ Base.promote_typejoin(::Type{Either{L, <:Any}}, ::Type{Either{L, <:Any}}) where 
 Base.promote_typejoin(::Type{Either{L1, <:Any}}, ::Type{Either{L2, <:Any}}) where {L1, L2} = Either
 
 
-Base.promote_typejoin(::Type{Either{<:Any, R}}, ::Type{Either{<:Any, R}}) where {L, R} = Either{<:Any, R}
+Base.promote_typejoin(::Type{Either{<:Any, R}}, ::Type{Either{<:Any, R}}) where {R} = Either{<:Any, R}
 
 Base.promote_typejoin(::Type{Either{<:Any, R1}}, ::Type{Either{<:Any, R2}}) where {R1, R2} = Either
 
