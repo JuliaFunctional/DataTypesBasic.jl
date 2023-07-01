@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.0.3] - 2023-07-01
 ### Changed
-- Compat compat now includes version 4
+- got rid of Compat dependency
+
 ## [2.0.2] - 2021-07-17
 ### Changed
 - reverting `Base.catch_backtrace()` to `Base.catch_stack()` everywhere. Apparently this is really only an issue on julia nightly and should not be changed in julia 1.6. Hence reverting everything.
@@ -18,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - 2021-07-15
 ### Added
 - `Base.get` and `Base.getindex` are now both implemented for `Const` (like they are implemented already for `Identity`), to simplify working with `Const`.
-- Vector conversions (`convert`) are now more generic and support AbstractArray in general 
+- Vector conversions (`convert`) are now more generic and support AbstractArray in general
 
 ### Fixed
 - `Option(3)` works now

@@ -39,8 +39,6 @@ export Identity, isidentity, Const,
   Try, @Try, @TryCatch, istry, issuccess, isfailure, Thrown, MultipleExceptions,
   ContextManager, @ContextManager
 
-using Compat
-
 # type definitions
 include("Identity.jl")
 include("Const.jl")

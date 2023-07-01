@@ -152,7 +152,7 @@ myeither = either("error", 2 > 3, 42)
 fe(myeither)  # "fallback behaviour 'error'"
 ```
 
-You also have support for `Iterators.flatten` in order to work "withing" Either, and combine everything correctly.
+You also have support for `Iterators.flatten` in order to work "within" Either, and combine everything correctly.
 ```julia
 check_threshold(a) = a < 15 ? Const((a, "threshold not reached")) : Identity("checked threshold successfully")
 
