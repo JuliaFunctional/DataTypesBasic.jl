@@ -254,7 +254,7 @@ context_ref(value) = @ContextManager function(cont)
 end
 
 # we can try out a contextmanager, by providing `identity` as the continuation `cont`
-context_print("value")(identity)  # 4
+context_print(4)(identity)  # 4
 # initializing value=4
 # finalizing value=4, got result=4
 
